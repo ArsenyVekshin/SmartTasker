@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS Board, Users, Board_subscribers, Task, Board_s_task,TimeInterval, Notifications,Checklist,Checklist2task,Checklist_task;
 CREATE TABLE Board (
     ID SERIAL PRIMARY KEY,
     name TEXT NOT NULL
