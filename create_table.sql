@@ -19,6 +19,14 @@ CREATE TABLE Users (
     FOREIGN KEY(role) REFERENCES Roles(ID)
 );
 
+
+CREATE TABLE Keypoint (
+    ID SERIAL PRIMARY KEY,
+    datetime TIMESTAMPTZ NOT NULL,
+    description TEXT NOT NULL,
+    name TEXT NOT NULL
+);
+
 CREATE TABLE Task (
     ID SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -29,7 +37,9 @@ CREATE TABLE Task (
     deadline TIMESTAMPTZ,
     priority INT,
     repeat_period INTERVAL,
-    FOREIGN KEY (board_id) REFERENCES Board(ID) ON DELETE SET NULL
+    keypoint_id INT,
+    FOREIGN KEY (board_id) REFERENCES Board(ID) ON DELETE SET NULL,
+    FOREIGN KEY (keypoint_id) REFERENCES Keypoint(ID) ON DELETE SET NULL
 );
 
 CREATE TABLE TimeInterval (
@@ -51,13 +61,6 @@ CREATE TABLE Notifications (
     checked BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (user_id) REFERENCES Users(ID) ON DELETE CASCADE,
     FOREIGN KEY (task_id) REFERENCES Task(ID) ON DELETE CASCADE
-);
-
-CREATE TABLE Keypoint (
-    ID SERIAL PRIMARY KEY,
-    datetime TIMESTAMPTZ NOT NULL,
-    description TEXT NOT NULL,
-    name TEXT NOT NULL
 );
 
 CREATE TABLE Checklist (
@@ -84,8 +87,10 @@ CREATE TABLE Meeting (
     place_id INT NOT NULL,
     repeat_period INTERVAL,
     timeinterval_id INT,
+    keypoint_id INT,
     FOREIGN KEY (place_id) REFERENCES Place(ID),
-    FOREIGN KEY (timeinterval_id) REFERENCES TimeInterval(ID)
+    FOREIGN KEY (timeinterval_id) REFERENCES TimeInterval(ID),
+    FOREIGN KEY (keypoint_id) REFERENCES Keypoint(ID)
 );
 
 CREATE TABLE MeetingMembers (
