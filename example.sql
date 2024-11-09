@@ -84,3 +84,13 @@ BEGIN
                 i % 100 + 1, '1 day', i % 100 + 1, i % 100 + 1);
     END LOOP;
 END $$;
+
+DO $$
+DECLARE
+    i INT;
+BEGIN
+    FOR i IN 1..100 LOOP
+        INSERT INTO MeetingMembers (meet_id, task_id, user_id)
+        VALUES (i % 100 + 1, i % 100 + 1, i % 100 + 1);
+    END LOOP;
+END $$;
