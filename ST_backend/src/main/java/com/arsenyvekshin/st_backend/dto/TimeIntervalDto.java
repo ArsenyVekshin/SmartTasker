@@ -6,7 +6,9 @@ import jakarta.persistence.PrePersist;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -33,27 +35,27 @@ public class TimeIntervalDto {
     @Max(value = 28800, message = "Ты можешь столько работать подряд, серьезно? (8 - максимум, не ври себе)")
     private Duration duration;
 
-    @JsonProperty("begin")
+    @JsonProperty
     @NotNull(message = "Время начала интервала не может быть пустым")
-    private LocalDateTime begin;
+    private LocalDateTime start;
 
-    @JsonProperty("end")
+    @JsonProperty
     @NotNull(message = "Время окончания интервала не может быть пустым")
-    private LocalDateTime end;
+    private LocalDateTime finish;
 
-    public TimeIntervalDto(TimeInterval interval){
+    public TimeIntervalDto(TimeInterval interval) {
         this.id = interval.getId();
         this.taskId = interval.getTask().getId();
         this.meeting_id = interval.getMeeting().getId();
-        this.owner = interval.getUser().getUsername();
+        this.owner = interval.getOwner().getUsername();
         this.duration = interval.getDuration();
-        this.begin = interval.getBegin();
-        this.end = interval.getEnd();
+        this.start = interval.getStart();
+        this.finish = interval.getFinish();
     }
 
     @PrePersist
     protected void onCreate() {
-        this.duration = Duration.between(this.begin, this.end);
+        this.duration = Duration.between(this.start, this.finish);
         //TODO: нужна валидация? Проверить
     }
 }

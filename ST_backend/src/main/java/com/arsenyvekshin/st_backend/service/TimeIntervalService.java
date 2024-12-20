@@ -43,10 +43,10 @@ public class TimeIntervalService {
         User user = userService.getCurrentUser();
 
         timeIntervalRepository.findAllBetweenTimesForUser(user, start.minusHours(9), end.plusHours(9)).stream().forEach(check -> {
-            if (check.getBegin().isBefore(start) && start.isBefore(check.getEnd())) {
+            if (check.getStart().isBefore(start) && start.isBefore(check.getFinish())) {
                 throw new IllegalArgumentException("Пересечение интервалов: начало интервала находится в другом интервале");
             }
-            if (check.getBegin().isBefore(end) && start.isBefore(check.getEnd())) {
+            if (check.getStart().isBefore(end) && start.isBefore(check.getFinish())) {
                 throw new IllegalArgumentException("Пересечение интервалов: конец интервала находится в другом интервале");
             }
         });
@@ -56,11 +56,12 @@ public class TimeIntervalService {
     }
 
     private void splitIntervalInDuration(TimeInterval interval, Duration duration) {
-        if(interval.isLocked()) throw new IllegalArgumentException("Разделение невозможно: интервал заблокирован");
-        if(interval.getDuration().compareTo(duration) <= 0) throw new IllegalArgumentException("Разделение невозможно: интервал меньше необходимой длины");
+        if (interval.isLocked()) throw new IllegalArgumentException("Разделение невозможно: интервал заблокирован");
+        if (interval.getDuration().compareTo(duration) <= 0)
+            throw new IllegalArgumentException("Разделение невозможно: интервал меньше необходимой длины");
 
-        TimeInterval second = new TimeInterval(userService.getCurrentUser(), interval.getBegin().plus(duration), interval.getEnd());
-        interval.setEnd(interval.getBegin().plus(duration));
+        TimeInterval second = new TimeInterval(userService.getCurrentUser(), interval.getStart().plus(duration), interval.getFinish());
+        interval.setFinish(interval.getStart().plus(duration));
         interval.setDuration(duration);
 
         timeIntervalRepository.save(interval);
@@ -68,30 +69,31 @@ public class TimeIntervalService {
     }
 
     @Transactional
-    public void allocateTaskIntoSchedule(Long task_id){
+    public void allocateTaskIntoSchedule(Long task_id) {
         User user = userService.getCurrentUser();
-        Task task = taskService.findTask(task_id);
-        List<TimeInterval> intervals = timeIntervalRepository.findAllAvailableBetweenTimesForUser(user, LocalDateTime.now(), task.getDeadline());
+        Task task = taskService.find(task_id);
+        List<TimeInterval> intervals = timeIntervalRepository.findAllAvailableBetweenTimesForUser(user, LocalDateTime.now(), task.getFinish());
 
         Duration nonAllocated = task.getDuration();
-        for (TimeInterval current : intervals){
-            if(current.isLocked()) continue;
-            if(current.getDuration().compareTo(nonAllocated) <= 0){
+        for (TimeInterval current : intervals) {
+            if (current.isLocked()) continue;
+            if (current.getDuration().compareTo(nonAllocated) <= 0) {
                 current.setTask(task);
                 nonAllocated = nonAllocated.minus(current.getDuration());
                 timeIntervalRepository.save(current);
-            }
-            else if(current.getDuration().compareTo(nonAllocated) > 0) {
+            } else if (current.getDuration().compareTo(nonAllocated) > 0) {
                 splitIntervalInDuration(current, nonAllocated);
                 current.setTask(task);
                 nonAllocated = Duration.ZERO;
                 timeIntervalRepository.save(current);
             }
-            if(nonAllocated.isZero()) break;
+            if (nonAllocated.isZero()) break;
         }
 
-        if(!nonAllocated.isZero())
+        if (!nonAllocated.isZero())
             throw new IllegalArgumentException("У вас недостаточно свободных интервалов, чтобы выполнить эту задачу.");
+
+        taskService.occupyTask(task);
     }
-    
+
 }

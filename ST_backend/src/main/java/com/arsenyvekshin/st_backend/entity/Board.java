@@ -1,18 +1,15 @@
 package com.arsenyvekshin.st_backend.entity;
 
 
+import com.arsenyvekshin.st_backend.dto.BoardDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Builder
-@Getter
-@Setter
-@ToString
-@AllArgsConstructor
+@Data
 @NoArgsConstructor
 @Entity(name = "Board")
-public class Board {
+public class Board implements OwnedObject {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,5 +23,11 @@ public class Board {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner")
     private User owner;
+
+    public Board updateByDto(BoardDto dto) {
+        this.name = dto.getName();
+        return this;
+    }
+
 }
 

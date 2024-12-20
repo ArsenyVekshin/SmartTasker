@@ -1,6 +1,7 @@
 package com.arsenyvekshin.st_backend.service;
 
 
+import com.arsenyvekshin.st_backend.entity.OwnedObject;
 import com.arsenyvekshin.st_backend.entity.Role;
 import com.arsenyvekshin.st_backend.entity.User;
 import com.arsenyvekshin.st_backend.repository.UserRepository;
@@ -86,6 +87,12 @@ public class UserService {
         // Получение имени пользователя из контекста Spring Security
         var username = SecurityContextHolder.getContext().getAuthentication().getName();
         return getByUsername(username);
+    }
+
+    public void checkOwnership(OwnedObject obj) {
+        User user = getCurrentUser();
+        if (obj.getOwner() != user && user.getRole() == Role.USER)
+            throw new IllegalArgumentException("У вас нет прав на изменение этого объекта");
     }
 
 

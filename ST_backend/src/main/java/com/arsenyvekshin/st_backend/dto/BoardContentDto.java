@@ -18,7 +18,6 @@ public class BoardContentDto {
     @JsonProperty
     private Long board_id;
 
-
     @JsonProperty
     List<TaskDto> list = new ArrayList<>();
 
@@ -33,7 +32,6 @@ public class BoardContentDto {
     public void addTask(TaskDto task) {
         list.add(task);
     }
-
 
 
 }

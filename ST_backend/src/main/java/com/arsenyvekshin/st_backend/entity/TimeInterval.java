@@ -2,34 +2,39 @@ package com.arsenyvekshin.st_backend.entity;
 
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import lombok.*;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
-@RequiredArgsConstructor
 @NoArgsConstructor
 @Entity(name = "TimeInterval")
-public class TimeInterval {
+public class TimeInterval implements OwnedObject {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id", nullable = true)
     private Task task;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "meeting_id")
     private Meeting meeting;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User owner;
 
     @Column(name = "duration")
     @Min(value = 600, message = "Перекур дольше длится, камон... Давай хотя-бы 10 минут")
@@ -37,31 +42,31 @@ public class TimeInterval {
     private Duration duration;
 
     @NotBlank(message = "Время начала интервала не может быть пустым")
-    @Column(name = "begin", nullable = false)
-    private LocalDateTime begin;
+    @Column(name = "start", nullable = false)
+    private LocalDateTime start;
 
     @NotBlank(message = "Время окончания интервала не может быть пустым")
-    @Column(name = "end", nullable = false)
-    private LocalDateTime end;
+    @Column(name = "finish", nullable = false)
+    private LocalDateTime finish;
 
     @Column(name = "locked")
     private boolean locked = false;
 
 
-    @AssertTrue(message = "Время начала не может быть в прошлом")
-    public boolean isBeginValid() {
-        return begin.isAfter(LocalDateTime.now());
+    public TimeInterval(User owner, LocalDateTime start, LocalDateTime finish) {
+        this.owner = owner;
+        this.start = start;
+        this.finish = finish;
     }
 
-    public TimeInterval(User user, LocalDateTime begin, LocalDateTime end) {
-        this.user = user;
-        this.begin = begin;
-        this.end = end;
+    @AssertTrue(message = "Время начала не может быть в прошлом")
+    public boolean isBeginValid() {
+        return start.isAfter(LocalDateTime.now());
     }
 
     @PrePersist
     protected void onCreate() {
-        this.duration = Duration.between(this.begin, this.end);
+        this.duration = Duration.between(this.start, this.finish);
         //TODO: нужна валидация? Проверить
     }
 

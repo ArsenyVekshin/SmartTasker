@@ -15,29 +15,29 @@ public interface TimeIntervalRepository extends JpaRepository<TimeInterval, Long
 
 
     // Найти все интервалы, которые начинаются после указанной даты
-    List<TimeInterval> findByBeginAfter(LocalDateTime begin);
+    List<TimeInterval> findByFinishAfter(LocalDateTime finish);
 
     // Найти все интервалы, где время начала между двумя датами
-    List<TimeInterval> findByBeginBetween(LocalDateTime start, LocalDateTime end);
+    List<TimeInterval> findByFinishBetween(LocalDateTime start, LocalDateTime finish);
 
     // Найти все интервалы, где task == null
     List<TimeInterval> findByTaskIsNull();
 
     // Найти все интервалы, где task == null и время начала между двумя датами
-    List<TimeInterval> findByTaskIsNullAndBeginBetween(LocalDateTime start, LocalDateTime end);
+    List<TimeInterval> findByTaskIsNullAndFinishBetween(LocalDateTime start, LocalDateTime finish);
 
-    TimeInterval findByTaskIdAndUserId(Long taskId, Long userId);
+    //TimeInterval findByTaskIdAndUserId(Long taskId, Long userId);
 
     // Все интервалы после определенного времени, где task = null и meeting = null
-    @Query("SELECT t FROM TimeInterval t WHERE t.user = :user AND t.task IS NULL AND t.meeting IS NULL AND t.begin > :startTime")
+    @Query("SELECT t FROM TimeInterval t WHERE t.owner = :user AND t.task IS NULL AND t.meeting IS NULL AND t.start > :startTime")
     List<TimeInterval> findAllAfterTimeForUser(@Param("user") User user, @Param("startTime") LocalDateTime startTime);
 
     // Все интервалы в промежутке времени, где task = null и meeting = null
-    @Query("SELECT t FROM TimeInterval t WHERE t.user = :user AND t.task IS NULL AND t.meeting IS NULL AND t.begin BETWEEN :startTime AND :endTime")
+    @Query("SELECT t FROM TimeInterval t WHERE t.owner = :user AND t.task IS NULL AND t.meeting IS NULL AND t.start BETWEEN :startTime AND :endTime")
     List<TimeInterval> findAllAvailableBetweenTimesForUser(@Param("user") User user, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 
     // Все интервалы в промежутке времени, где task = null и meeting = null
-    @Query("SELECT t FROM TimeInterval t WHERE t.user = :user AND t.begin BETWEEN :startTime AND :endTime")
+    @Query("SELECT t FROM TimeInterval t WHERE t.owner = :user AND t.start BETWEEN :startTime AND :endTime")
     List<TimeInterval> findAllBetweenTimesForUser(@Param("user") User user, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
 
 }

@@ -14,10 +14,10 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
     List<Meeting> findByTaskId(Long taskId);
 
     // Метод для поиска встреч по дате начала
-    List<Meeting> findByBeginAfter(LocalDateTime begin);
+    List<Meeting> findByStartAfter(LocalDateTime start);
 
     // Метод для поиска встреч по дате окончания
-    List<Meeting> findByEndBefore(LocalDateTime end);
+    List<Meeting> findByFinishBefore(LocalDateTime finish);
 
     // Метод для поиска встреч по ключевой точке
     List<Meeting> findByKeypointId(Long keypointId);

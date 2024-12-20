@@ -1,10 +1,9 @@
 package com.arsenyvekshin.st_backend.entity;
 
+import com.arsenyvekshin.st_backend.dto.MeetingDto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -12,13 +11,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity(name = "Meeting")
 public class Meeting {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @NotBlank(message = "Имя задачи не может быть пустым")
@@ -32,14 +30,14 @@ public class Meeting {
     private Duration duration;
 
     @NotBlank(message = "Время начала встречи не может быть пустым")
-    @Column(name = "begin", nullable = false)
-    private LocalDateTime begin;
+    @Column(name = "start", nullable = false)
+    private LocalDateTime start;
 
     @NotBlank(message = "Окончание встречи не может быть пустым")
-    @Column(name = "end", nullable = false)
-    private LocalDateTime end;
+    @Column(name = "finish", nullable = false)
+    private LocalDateTime finish;
 
-    @Column(name = "repeatPeriod")
+    @Column(name = "repeat_period")
     private Duration repeatPeriod;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,8 +50,8 @@ public class Meeting {
 
     @ManyToMany
     @JoinTable(
-            name =  "MeetingMembers",
-            joinColumns  = @JoinColumn(name = "meeting_id"),
+            name = "meeting_members",
+            joinColumns = @JoinColumn(name = "meeting_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> members = new HashSet<>();
@@ -64,6 +62,21 @@ public class Meeting {
 
     @PostPersist
     protected void onCreate() {
-        this.duration = Duration.between(this.begin, this.end);
+        this.duration = Duration.between(this.start, this.finish);
+    }
+
+    public Meeting updateByDto(MeetingDto dto) {
+        this.id = dto.getId();
+        this.name = dto.getName();
+        this.description = dto.getDescription();
+        this.duration = dto.getDuration();
+        this.start = dto.getBegin();
+        this.finish = dto.getEnd();
+        this.repeatPeriod = dto.getRepeatPeriod();
+        return this;
+    }
+
+    public void addMember(User user) {
+        members.add(user);
     }
 }

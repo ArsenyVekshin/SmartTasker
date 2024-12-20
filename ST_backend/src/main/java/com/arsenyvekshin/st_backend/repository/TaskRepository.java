@@ -25,10 +25,10 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findTasksByBoardAndOwner(Board board, User owner);
 
     // Метод для поиска задач, которые начали выполняться после указанной даты
-    List<Task> findByStartedAfter(LocalDateTime started);
+    List<Task> findByStartAfter(LocalDateTime start);
 
     // Метод для поиска задач, чьи дедлайны наступили до указанной даты
-    List<Task> findByDeadlineBefore(LocalDateTime deadline);
+    List<Task> findByFinishBefore(LocalDateTime deadline);
 
     // Метод для поиска задач, у которых есть период повторения
     List<Task> findByRepeatPeriodNotNull();
@@ -37,8 +37,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findByKeypointId(Long keypointId);
 
     // Метод для поиска задач, которые еще не завершены (по текущей дате)
-    @Query("SELECT t FROM Task t WHERE t.deadline > :now")
-    List<Task> findTasksWithAvailableDeadline(LocalDateTime now);
+    @Query("SELECT t FROM Task t WHERE t.finish > :now")
+    List<Task> findTasksWithAvailableFinish(LocalDateTime now);
 
     // Поиск задач по статусу
     @Query("SELECT t FROM Task t WHERE t.status = :status")
@@ -49,12 +49,12 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findByStatusAndBoardId(TaskStatus status, Long boardId);
 
     // Поиск задач, чей статус изменился после конкретной даты
-    @Query("SELECT t FROM Task t WHERE t.status = :status AND t.started > :startDate")
-    List<Task> findByStatusAndStartedAfter(TaskStatus status, LocalDateTime startDate);
+    @Query("SELECT t FROM Task t WHERE t.status = :status AND t.start > :start")
+    List<Task> findByStatusAndStartAfter(TaskStatus status, LocalDateTime start);
 
     // Поиск задач, чье время завершения (дедлайн) находится между двумя датами
-    @Query("SELECT t FROM Task t WHERE t.deadline BETWEEN :startDate AND :endDate")
-    List<Task> findByDeadlineBetween(LocalDateTime startDate, LocalDateTime endDate);
+    @Query("SELECT t FROM Task t WHERE t.finish BETWEEN :startDate AND :endDate")
+    List<Task> findByFinishBetween(LocalDateTime startDate, LocalDateTime endDate);
 
     // Поиск задач по доске и статусу
     @Query("SELECT t FROM Task t WHERE t.board.id = :boardId AND t.status = :status")

@@ -23,6 +23,7 @@ import java.util.List;
 @Entity(name = "Users")
 public class User implements UserDetails, ComparableObj {
 
+    @JsonIgnore
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,9 +36,11 @@ public class User implements UserDetails, ComparableObj {
     @Column(name = "password")
     private String password;
 
+    @JsonIgnore
     @Column(name = "role", nullable = false)
     private Role role;
 
+    @JsonIgnore
     @Column(name = "roleRequest")
     private boolean roleRequest = false;
 
