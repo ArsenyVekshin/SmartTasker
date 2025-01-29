@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import {useAuth} from '../context/auth';
 const AuthComponent = () => {
     const pagestyles={
@@ -50,12 +50,24 @@ const AuthComponent = () => {
         // },
     };
     const [message, setMessage] = useState('');
-    const {login, isIn} = useAuth();
+    const {login, register, isIn} = useAuth();
+    const [isAuth, setIsAuth] = useState(true);
     const handleSubmit = (e) => {
         e.preventDefault();
-        login(e.target[0].value, e.target[1].value)
-        .then((resp)=>{navigate('/list')})
-        .catch((e) => {setMessage('Ошибка сервера')})
+        setMessage('');
+        if(isAuth) {
+            login(/*login*/ e.target[0].value, /*password*/ e.target[1].value)
+            .then(() => {navigate('/list')})
+            .catch(() => {setMessage('Ошибка сервера')})
+        } else {
+            if(/*password*/ e.target[1].value !== /*password repeat*/e.target[2].value)
+                setMessage('Пароли должны совпадать!')
+            else {
+                register(e.target[0].value, e.target[1].value)
+                .then(() => {navigate('/list')})
+                .catch(() => {setMessage('Ошибка сервера')})
+            }
+        }
     };
     const navigate = useNavigate();
     if(isIn())
@@ -66,8 +78,10 @@ const AuthComponent = () => {
             <form style={formstyles} onSubmit={handleSubmit}>
                 <p>Логин: <input type='text' name='login' placeholder='Логин' required /></p>
                 <p>Пароль: <input type='password' name='password' placeholder='Пароль' required /></p>
-                <button type='submit' style={buttonstyles}>Авторизация</button>
-                <Link to="/register">Нет аккаунта?</Link>
+                {!isAuth && <p>Повторите пароль: <input type='password' name='password_repeat' placeholder='Повторите пароль' required /></p>}
+                <button type='submit' style={buttonstyles}>{isAuth?'Авторизация':'Регистрация'}</button>
+                {isAuth && <button type='button' onClick={()=>setIsAuth(false)}>Нет аккаунта?</button>}
+                {!isAuth && <button type='button' onClick={()=>setIsAuth(true)}>Уже есть аккаунт</button>}
                 {message && <p>{message}</p>}
             </form>
         </div>
