@@ -20,38 +20,22 @@ const AuthComponent = () => {
     };
     const buttonstyles={
         // Основные стили
-        display: "inline-block",
-        padding: "15px 30px",
+        padding: "10px 20px",
         fontSize: "18px",
         fontWeight: "bold",
         color: "white",
         textAlign: "center",
-        textDecoration: "none",
         border: "none",
-        borderRadius: "50px", // Закругленные углы
         cursor: "pointer",
-        background: "linear-gradient(red, blue)", // Разноцветный градиент
-        backgroundSize: "300% 300%", // Увеличиваем размер градиента для анимации
+        borderRadius: "50px", // Закругленные углы
         boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)", // Тень для объема
-        // transition: "all 0.4s ease", // Плавные переходы
-
-        // Анимация градиента
-        // animation: "gradientAnimation 8s ease infinite",
-
-        // Эффект при наведении
-        // '&:hover': {
-        //     transform: "scale(1.05)", // Увеличение кнопки
-        //     boxShadow: "0 6px 20px rgba(0, 0, 0, 0.3)", // Увеличение тени
-        // },
-
-        // // Эффект при нажатии
-        // '&:active': {
-        //     transform: "scale(0.95)", // Уменьшение кнопки
-        // },
     };
     const [message, setMessage] = useState('');
     const {login, register, isIn} = useAuth();
     const [isAuth, setIsAuth] = useState(true);
+    buttonstyles['background'] = !isAuth ? 
+    "linear-gradient(red, orange, yellow, green, cyan, indigo, purple)" : // Разноцветный градиент
+    " #a0c0a0";
     const handleSubmit = (e) => {
         e.preventDefault();
         setMessage('');
