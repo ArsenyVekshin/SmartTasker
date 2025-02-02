@@ -5,13 +5,13 @@ const AuthComponent = () => {
     const pagestyles={
         display: 'grid',
         gap: '10px',
-        'align-items': 'center',
-        'justify-content': 'center',
+        alignItems: 'center',
+        justifyContent: 'center',
         height: '100vh',
         background: 'rgba(129, 241, 249, 0.78)'
     };
     const formstyles={
-        'grid-column': 2,
+        gridRow: 2,
         color: ' #9f8a03',
         margin: 'auto',
         border: '10px solid #9f9f03',
@@ -58,7 +58,7 @@ const AuthComponent = () => {
         navigate('/list');
     return (
         <div style={pagestyles}>
-            <h1 style={{'grid-column': 1}}>Очень даже неплохой дизайн для сайта</h1>
+            <h1 style={{gridRow: 1}}>Очень даже неплохой дизайн для сайта</h1>
             <form style={formstyles} onSubmit={handleSubmit}>
                 <p>Логин: <input type='text' name='login' placeholder='Логин' required /></p>
                 <p>Пароль: <input type='password' name='password' placeholder='Пароль' required /></p>
