@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useAuth} from '../context/auth';
 const AuthComponent = () => {
@@ -8,13 +8,13 @@ const AuthComponent = () => {
         alignItems: 'center',
         justifyContent: 'center',
         height: '100vh',
-        background: 'rgba(129, 241, 249, 0.78)'
+        background: ' #9df9ef',
     };
     const formstyles={
         gridRow: 2,
-        color: ' #9f8a03',
+        color: ' #51e2f5',
         margin: 'auto',
-        border: '10px solid #9f9f03',
+        border: '10px solid #ffa8B6',
         padding: '10px',
         background: 'white',
     };
@@ -23,19 +23,17 @@ const AuthComponent = () => {
         padding: "10px 20px",
         fontSize: "18px",
         fontWeight: "bold",
-        color: "white",
+        color: " ",
         textAlign: "center",
         border: "none",
         cursor: "pointer",
         borderRadius: "50px", // Закругленные углы
         boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)", // Тень для объема
+        background: ' #51e2f5'
     };
     const [message, setMessage] = useState('');
     const {login, register, isIn} = useAuth();
     const [isAuth, setIsAuth] = useState(true);
-    buttonstyles['background'] = !isAuth ? 
-    "linear-gradient(red, orange, yellow, green, cyan, indigo, purple)" : // Разноцветный градиент
-    " #a0c0a0";
     const handleSubmit = (e) => {
         e.preventDefault();
         setMessage('');
@@ -54,11 +52,13 @@ const AuthComponent = () => {
         }
     };
     const navigate = useNavigate();
-    if(isIn())
-        navigate('/list');
+    useEffect(()=>{
+        if(isIn())
+            navigate('/list');
+    },[]);
     return (
         <div style={pagestyles}>
-            <h1 style={{gridRow: 1}}>Очень даже неплохой дизайн для сайта</h1>
+            <h1 style={{gridRow: 1, color: ' #edf7f6'}}>Очень даже неплохой дизайн для сайта</h1>
             <form style={formstyles} onSubmit={handleSubmit}>
                 <p>Логин: <input type='text' name='login' placeholder='Логин' required /></p>
                 <p>Пароль: <input type='password' name='password' placeholder='Пароль' required /></p>

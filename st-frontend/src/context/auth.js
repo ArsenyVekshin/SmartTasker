@@ -1,23 +1,22 @@
-import React, {createContext, useState, useContext} from 'react';
-import {auth as authApi, register as registerApi} from '../services/api.js';
+import React, {createContext, useState, useContext, useEffect} from 'react';
+import {auth as authApi, register as registerApi, changeToken, getToken} from '../services/api.js';
 const AuthContext = createContext();
 
 export function AuthProvider({children}) {
-    const [token, setToken] = useState(null);
-    const [isAdmin, setIsAdmin] = useState(false);
+    const [token, setToken] = useState(localStorage.getItem('token'));
+    const [isAdmin, setIsAdmin] = useState(localStorage.getItem('isAdmin'));
+    changeToken(token);
+    function handleResponse(response) {
+        setToken(response.data.token);
+        setIsAdmin(response.data.adminRole);
+    }
     function login(username, password) {
         return authApi(username, password)
-        .then((resp)=>{
-            setToken(resp.data.token);
-            setIsAdmin(resp.data.isAdmin);
-        })
+        .then(handleResponse);
     }
     function register(username, password) {
         return registerApi(username, password)
-        .then((resp) => {
-            setToken(resp.data.token);
-            setIsAdmin(resp.data.isAdmin);
-        })
+        .then(handleResponse);
     }
     function reset() {
         setToken(null);
@@ -26,8 +25,18 @@ export function AuthProvider({children}) {
     function isIn() {
         return token != null;
     }
+    useEffect(()=>{
+        changeToken(token);
+        if(token)
+            localStorage.setItem('token', token);
+        else
+            localStorage.removeItem('token');
+    }, [token]);
+    useEffect(() => {
+        localStorage.setItem('isAdmin', isAdmin);
+    }, [isAdmin]);
     return (
-        <AuthContext.Provider value={{token, isAdmin, login, register, reset, isIn}}>
+        <AuthContext.Provider value={{isAdmin, login, register, reset, isIn}}>
             {children}
         </AuthContext.Provider>
     );
