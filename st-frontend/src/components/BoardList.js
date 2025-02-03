@@ -1,7 +1,65 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useAuth} from '../context/auth';
-import { getBoardContain, getOwnedBoards } from '../services/api';
+import { createBoard, deleteBoard, getBoardContain, getOwnedBoards, updateBoard } from '../services/api';
+const BoardListHeader = ({buttonCallback}) => {
+    return (
+        <div style={{background: 'rgb(231, 231, 231)', float: 'right'}}>
+            <button onClick={buttonCallback} style={{background: 'rgb(218, 255, 178)'}}>+</button>
+        </div>
+    )
+}
+const BoardSettinsComponent = ({board, closeCallback}) => {
+    const [name, setName] = useState('');
+    const [owner, setOwner] = useState('');
+    const [message, setMessage] = useState(null);
+    useEffect(() => {
+        if(board == null) return;
+        setName(board.name);
+    }, [board]);
+    function handleCreate() {
+        return createBoard(name, owner);
+    }
+    function handleUpdate() {
+        return updateBoard(name, owner);
+    }
+    function handleDelete() {
+        if(board !== null)
+            deleteBoard(board.id).then(closeCallback).catch((e)=>setMessage('Ошибочка'));
+        else
+            throw 'delete without id!';
+    }
+    return (
+        <div style={{
+            position: 'fixed',
+            height: '100vh',
+            width: '100%',
+            zIndex: '20',
+            background: 'rgba(0,0,0,0.32)'
+        }}>
+            <div style={{
+                background: 'white',
+                width: '600px',
+                maxWidth: '100%',
+                margin: '10vh auto auto auto',
+                placeItems: 'center',
+                padding: 10,
+            }}>
+                <button onClick={closeCallback} style={{float: 'right'}}>X</button>
+                {message && <p>{message}</p>}
+                <form onSubmit={(e)=>{e.preventDefault(); setMessage(null); (board===null?handleCreate(e):handleUpdate(e)).then(closeCallback).catch((e)=>{setMessage('Ошибочка')})}}>
+                    {board === null && <h1>Создание доски</h1>}
+                    {board !== null && <h1>Редактирование доски</h1>}
+                    <label>Название доски:<input type="text" name="name" value={name} onChange={(e)=>{setName(e.target.value)}} required></input></label><br/>
+                    <label>Владалец:<input type="text" name="owner" value={owner} onChange={(e)=>{setOwner(e.target.value)}} required></input></label><br/>
+                    {board === null && <button style={{background: 'lime', borderRadius: 10, padding: '10px 20px', color: 'white', fontSize: 18}}>Создать доску</button>}
+                    {board !== null && <button style={{background: 'yellow', borderRadius: 10, padding: '10px 20px', color: 'black', fontSize: 18}}>Редактировать доску</button>}
+                </form>
+                {board !== null && <button style={{background: 'red', borderRadius: 10, padding: '10px 20px', color: 'white', fontSize: 18}} onClick={handleDelete}>Удалить доску</button>}
+            </div>
+        </div>
+    )
+}
 const BoardListComponent = () => {
     const {isIn} = useAuth();
     const navigate = useNavigate();
@@ -191,15 +249,25 @@ const BoardListComponent = () => {
         const newBoards = [...boards];
         setBoards(newBoards);
     }
+    const [editedBoard, setEditedBoard] = useState(null);
+    const [boardSettingsPopup, setBoardSettingsPopup] = useState(false);
     return (
         <div>
+            <BoardListHeader buttonCallback={()=>{setBoardSettingsPopup(true); setEditedBoard(null);}} />
+            {boardSettingsPopup && <BoardSettinsComponent board={editedBoard} closeCallback={()=>{setBoardSettingsPopup(false);fetchTasks();}}/>}
             {message && <p key="message">{message}</p>}
             {boards.length === 0 && <p key="no boards">Нет задач!</p>}
             <div key="boardsGrid" style={{display: "grid", gap: "10px"}}>
             {boards.map((board)=>(
                 <div key={'board'+board.id} style={{background: palitres[board.seqNum%palitres.length][0], width: "30vw", gridRow: Math.floor(board.seqNum/3)+1, gridColumn: board.seqNum%3+1, border: "2px solid black"}}>
                     <div key={"board_header"+board.id} onClick={()=>toggleBoard(board)} style={{cursor: 'pointer', margin: 3}}>
-                        <h1 style={{margin: 0}}><p style={{display:"inline", fontWeight: 'normal'}}>{board.show?'\u2228':'>'}</p>{board.name}</h1>
+                        <h1 style={{margin: 0}}>
+                            <p style={{display:"inline", fontWeight: 'normal'}}>
+                                {board.show?'\u2228':'>'}
+                            </p>
+                            {board.name}
+                            <img src='./icons/update.png' height="20em" width="20em" onClick={()=>{setEditedBoard(board); setBoardSettingsPopup(true);}}/>
+                        </h1>
                     </div>
                     <div key={"board_body"+board.id} style={{maxHeight: '30vh', overflow: 'auto'}}>
                         {board.show && board.tasks.map((task)=>(
