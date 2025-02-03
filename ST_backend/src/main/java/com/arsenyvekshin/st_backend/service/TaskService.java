@@ -2,12 +2,16 @@ package com.arsenyvekshin.st_backend.service;
 
 
 import com.arsenyvekshin.st_backend.dto.TaskDto;
+import com.arsenyvekshin.st_backend.entity.Role;
 import com.arsenyvekshin.st_backend.entity.Task;
 import com.arsenyvekshin.st_backend.entity.TaskStatus;
+import com.arsenyvekshin.st_backend.entity.User;
 import com.arsenyvekshin.st_backend.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.awt.desktop.PreferencesEvent;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -77,6 +81,12 @@ public class TaskService {
         }
 
         return task;
+    }
+
+    public TaskDto getTask(Long id){
+        Task task = find(id);
+        userService.checkOwnership(task);
+        return new TaskDto(task);
     }
 
 

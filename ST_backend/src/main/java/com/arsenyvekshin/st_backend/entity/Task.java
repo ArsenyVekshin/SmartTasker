@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity(name = "Task")
-public class Task implements OwnedObject {
+public class Task implements OwnedObject, AllocatableObject {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

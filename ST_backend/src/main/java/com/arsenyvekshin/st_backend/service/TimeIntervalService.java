@@ -2,6 +2,7 @@ package com.arsenyvekshin.st_backend.service;
 
 
 import com.arsenyvekshin.st_backend.dto.TimeIntervalDto;
+import com.arsenyvekshin.st_backend.entity.AllocatableObject;
 import com.arsenyvekshin.st_backend.entity.Task;
 import com.arsenyvekshin.st_backend.entity.TimeInterval;
 import com.arsenyvekshin.st_backend.entity.User;
@@ -22,8 +23,6 @@ public class TimeIntervalService {
     static long MIN_INTERVAL_SIZE = 0;
 
     private final TimeIntervalRepository timeIntervalRepository;
-    private final TaskRepository taskRepository;
-
 
     private final TaskService taskService;
     private final UserService userService;
@@ -69,31 +68,29 @@ public class TimeIntervalService {
     }
 
     @Transactional
-    public void allocateTaskIntoSchedule(Long task_id) {
+    public void allocateIntoSchedule(AllocatableObject placeholder) {
         User user = userService.getCurrentUser();
-        Task task = taskService.find(task_id);
-        List<TimeInterval> intervals = timeIntervalRepository.findAllAvailableBetweenTimesForUser(user, LocalDateTime.now(), task.getFinish());
+        List<TimeInterval> intervals = timeIntervalRepository.findAllAvailableBetweenTimesForUser(user, LocalDateTime.now(), placeholder.getFinish());
 
-        Duration nonAllocated = task.getDuration();
+        Duration nonAllocated = placeholder.getDuration();
         for (TimeInterval current : intervals) {
             if (current.isLocked()) continue;
             if (current.getDuration().compareTo(nonAllocated) <= 0) {
-                current.setTask(task);
+                current.occupyBy(placeholder);
                 nonAllocated = nonAllocated.minus(current.getDuration());
                 timeIntervalRepository.save(current);
             } else if (current.getDuration().compareTo(nonAllocated) > 0) {
                 splitIntervalInDuration(current, nonAllocated);
-                current.setTask(task);
+                current.occupyBy(placeholder);
                 nonAllocated = Duration.ZERO;
                 timeIntervalRepository.save(current);
             }
             if (nonAllocated.isZero()) break;
         }
-
         if (!nonAllocated.isZero())
             throw new IllegalArgumentException("У вас недостаточно свободных интервалов, чтобы выполнить эту задачу.");
 
-        taskService.occupyTask(task);
+        if(placeholder.getClass() == Task.class) taskService.occupyTask((Task) placeholder);
     }
 
 }

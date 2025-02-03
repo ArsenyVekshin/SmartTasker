@@ -1,7 +1,9 @@
 package com.arsenyvekshin.st_backend.repository;
 
 import com.arsenyvekshin.st_backend.entity.Meeting;
+import com.arsenyvekshin.st_backend.entity.Place;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -30,6 +32,13 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
 
     // Метод для поиска встреч, которые повторяются через определённый период
     List<Meeting> findByRepeatPeriodNotNull();
+
+    @Query("SELECT DISTINCT m.place " +
+            "FROM Meeting m " +
+            "WHERE (m.start BETWEEN :start AND :finish) " +
+            "OR (m.finish BETWEEN :start AND :finish) " +
+            "OR (m.start <= :start AND m.finish >= :finish)")
+    List<Place> findBusyPlacesByTimeRange(LocalDateTime start, LocalDateTime finish);
 
 }
 

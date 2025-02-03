@@ -3,10 +3,13 @@ package com.arsenyvekshin.st_backend.service;
 
 import com.arsenyvekshin.st_backend.dto.MeetingDto;
 import com.arsenyvekshin.st_backend.entity.Meeting;
+import com.arsenyvekshin.st_backend.entity.Place;
 import com.arsenyvekshin.st_backend.repository.MeetingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -70,5 +73,18 @@ public class MeetingService {
         return meeting;
     }
 
+    public List<Place> findBusyPlacesByTimeRange(LocalDateTime start, LocalDateTime finish){
+        return meetingRepository.findBusyPlacesByTimeRange(start, finish);
+    }
+
+    private List<Place> findSuitablePlacesForMeeting(Meeting meeting) {
+        List<Place> suitable = placeService.findSuitablePlaces(meeting.membersNum());
+        if(suitable.isEmpty()) throw new IllegalArgumentException("Слишком много участников. Нет подходящей локации.");
+        List<Place> busy = findBusyPlacesByTimeRange(meeting.getStart(), meeting.getFinish());
+        suitable.removeAll(busy);
+        if(suitable.isEmpty()) throw new IllegalArgumentException("Все подходящие локации в это время заняты.");
+
+        return suitable;
+    }
 
 }

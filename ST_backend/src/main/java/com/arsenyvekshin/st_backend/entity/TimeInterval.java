@@ -10,13 +10,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.InvalidClassException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "TimeInterval")
+@Entity(name = "time_interval")
 public class TimeInterval implements OwnedObject {
 
     @Id
@@ -68,6 +69,14 @@ public class TimeInterval implements OwnedObject {
     protected void onCreate() {
         this.duration = Duration.between(this.start, this.finish);
         //TODO: нужна валидация? Проверить
+    }
+
+    public void occupyBy(AllocatableObject obj) {
+        if(obj.getClass() == Task.class)
+            this.task = (Task) obj;
+        else if(obj.getClass() == Meeting.class)
+            this.meeting = (Meeting) obj;
+        else throw new IllegalArgumentException("Данный клас не может резервировать временные слоты");
     }
 
 }

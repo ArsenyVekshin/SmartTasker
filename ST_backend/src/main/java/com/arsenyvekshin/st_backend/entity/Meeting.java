@@ -12,7 +12,7 @@ import java.util.Set;
 
 @Data
 @Entity(name = "Meeting")
-public class Meeting {
+public class Meeting implements AllocatableObject{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -79,4 +79,6 @@ public class Meeting {
     public void addMember(User user) {
         members.add(user);
     }
+
+    public int membersNum(){return members.size();}
 }
