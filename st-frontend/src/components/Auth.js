@@ -40,14 +40,14 @@ const AuthComponent = () => {
         if(isAuth) {
             login(/*login*/ e.target[0].value, /*password*/ e.target[1].value)
             .then(() => {navigate('/list')})
-            .catch(() => {setMessage('Ошибка сервера')})
+            .catch((err) => {if(err.response.status < 500) setMessage(err.response.data.message); else setMessage('Ошибка сервера');})
         } else {
             if(/*password*/ e.target[1].value !== /*password repeat*/e.target[2].value)
                 setMessage('Пароли должны совпадать!')
             else {
                 register(e.target[0].value, e.target[1].value)
                 .then(() => {navigate('/list')})
-                .catch(() => {setMessage('Ошибка сервера')})
+                .catch((err) => {if(err.response.status < 500) setMessage(err.response.data.message); else setMessage('Ошибка сервера');})
             }
         }
     };
