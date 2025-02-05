@@ -8,12 +8,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/kanban/tasks")
 @RequiredArgsConstructor
-@Tag(name = "Управление задачами", description = "Методы для работы ТОЛЬКО с задачами")
+@Tag(name = "Управление задачами", description = "Методы для работы с задачами")
 public class TaskController {
 
     private final TaskService taskService;
@@ -26,20 +27,27 @@ public class TaskController {
 
     @Operation(summary = "Создание задачи")
     @PostMapping("")
-    public TaskDto createBoards(@RequestBody @Valid TaskDto taskDto){
+    public TaskDto createTask(@RequestBody @Valid TaskDto taskDto){
         return new TaskDto(taskService.create(taskDto));
     }
 
     @Operation(summary = "Изменение задачи")
     @PutMapping("")
-    public TaskDto updateBoards(@RequestBody @Valid TaskDto taskDto){
+    public TaskDto updateTask(@RequestBody @Valid TaskDto taskDto){
         return new TaskDto(taskService.update(taskDto));
     }
 
     @Operation(summary = "Удаление задачи")
     @DeleteMapping("/{taskId}")
-    public MessageInfoDto deleteBoards(@PathVariable Long taskId){
+    public MessageInfoDto deleteTask(@PathVariable Long taskId){
         taskService.delete(taskId);
         return new MessageInfoDto("OK");
     }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public MessageInfoDto error(Exception ex) {
+        return new MessageInfoDto(ex.getMessage());
+    }
+
 }

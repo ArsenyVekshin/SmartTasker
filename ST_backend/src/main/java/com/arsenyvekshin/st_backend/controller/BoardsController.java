@@ -50,7 +50,7 @@ public class BoardsController {
 
     @Operation(summary = "Создание доски")
     @PostMapping("")
-    public BoardDto createBoard(@RequestBody @Valid BoardDto boardDto){
+    public BoardDto createBoard(@RequestBody BoardDto boardDto){
         return new BoardDto(boardService.create(boardDto));
     }
 

@@ -62,10 +62,10 @@ public class Task implements OwnedObject, AllocatableObject {
     public Task updateByDto(TaskDto dto) {
         this.name = dto.getName();
         this.description = dto.getDescription();
-        this.duration = dto.getDuration();
+        this.duration = Duration.ofMinutes(dto.getDuration());
         this.start = dto.getStart();
         this.finish = dto.getFinish();
-        this.repeatPeriod = dto.getRepeatPeriod();
+        this.repeatPeriod = Duration.ofMinutes(dto.getRepeatPeriod());
         this.status = dto.getStatus();
         return this;
     }

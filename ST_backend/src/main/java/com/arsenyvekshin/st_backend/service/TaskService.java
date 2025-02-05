@@ -80,6 +80,8 @@ public class TaskService {
             }
         }
 
+        task.setOwner(userService.getCurrentUser());
+
         return task;
     }
 

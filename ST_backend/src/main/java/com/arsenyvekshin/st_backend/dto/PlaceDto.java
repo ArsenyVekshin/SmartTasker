@@ -3,9 +3,13 @@ package com.arsenyvekshin.st_backend.dto;
 import com.arsenyvekshin.st_backend.entity.Place;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import lombok.*;
 
 @Data
+@AllArgsConstructor
+@RequiredArgsConstructor
+@Setter
+@Getter
 public class PlaceDto {
 
     @JsonProperty

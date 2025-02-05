@@ -2,6 +2,7 @@ package com.arsenyvekshin.st_backend.service;
 
 
 import com.arsenyvekshin.st_backend.dto.MeetingDto;
+import com.arsenyvekshin.st_backend.dto.PlaceDto;
 import com.arsenyvekshin.st_backend.entity.Meeting;
 import com.arsenyvekshin.st_backend.entity.Place;
 import com.arsenyvekshin.st_backend.repository.MeetingRepository;
@@ -85,6 +86,11 @@ public class MeetingService {
         if(suitable.isEmpty()) throw new IllegalArgumentException("Все подходящие локации в это время заняты.");
 
         return suitable;
+    }
+
+    public List<PlaceDto> getSuitablePlacesForMeeting(long id) {
+        Meeting meeting = find(id);
+        return findSuitablePlacesForMeeting(meeting).stream().map(PlaceDto::new).toList();
     }
 
 }

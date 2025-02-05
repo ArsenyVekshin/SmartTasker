@@ -69,10 +69,10 @@ public class Meeting implements AllocatableObject{
         this.id = dto.getId();
         this.name = dto.getName();
         this.description = dto.getDescription();
-        this.duration = dto.getDuration();
+        this.duration = Duration.ofMinutes(dto.getDuration());
         this.start = dto.getBegin();
         this.finish = dto.getEnd();
-        this.repeatPeriod = dto.getRepeatPeriod();
+        this.repeatPeriod = Duration.ofMinutes(dto.getRepeatPeriod());
         return this;
     }
 
