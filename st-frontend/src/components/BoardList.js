@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useAuth} from '../context/auth';
-import { createBoard, createTask, deleteBoard, deleteTask, getBoardContain, getOwnedBoards, updateBoard, updateTask } from '../services/api';
+import { createBoard, createTask, deleteBoard, deleteTask, getMyTasksOnBoard, getOwnedBoards, updateBoard, updateTask } from '../services/api';
 const BoardListHeader = ({buttonCallback}) => {
     return (
         <div style={{background: 'rgb(231, 231, 231)', float: 'right'}}>
@@ -51,8 +51,6 @@ const BoardSettinsComponent = ({board, closeCallback}) => {
     function handleDelete() {
         if(board !== null)
             deleteBoard(board.id).then(closeCallback).catch((e)=>setMessage('Ошибочка'));
-        else
-            throw 'delete without id!';
     }
     return (
         <PopupComponent closeCallback={closeCallback}>
@@ -61,7 +59,7 @@ const BoardSettinsComponent = ({board, closeCallback}) => {
             {board === null && <h1>Создание доски</h1>}
             {board !== null && <h1>Редактирование доски</h1>}
             <label>Название доски:<input type="text" name="name" value={name} onChange={(e)=>{setName(e.target.value)}} required></input></label><br/>
-            <label>Владелец:<input type="text" name="owner" value={owner} onChange={(e)=>{setOwner(e.target.value)}}></input></label><br/>
+            <label>Владелец:<input type="text" name="owner" value={owner} onChange={(e)=>{setOwner(e.target.value)}} required></input></label><br/>
             {board === null && <button style={{background: 'lime', borderRadius: 10, padding: '10px 20px', color: 'white', fontSize: 18}}>Создать доску</button>}
             {board !== null && <button style={{background: 'yellow', borderRadius: 10, padding: '10px 20px', color: 'black', fontSize: 18}}>Редактировать доску</button>}
         </form>
@@ -70,77 +68,7 @@ const BoardSettinsComponent = ({board, closeCallback}) => {
     )
 }
 
-const TaskSettingsComponent = ({task, board, closeCallback}) => {
-    const [name, setName] = useState('');
-    const [owner, setOwner] = useState('');
-    const [description, setDescription] = useState('');
-    const [start, setStart] = useState(new Date().toISOString());
-    const [finish, setFinish] = useState(new Date().toISOString());
-    const [message, setMessage] = useState(null);
-    useEffect(() => {
-        if(task == null) return;
-        setName(task.name);
-        setOwner(task.owner);
-        setDescription(task.description);
-        setStart(task.start);
-        setFinish(task.finish);
-    }, [task]);
-    function handleCreate() {
-        return createTask({
-            name: name,
-            board: {
-                id: board.id,
-                name: board.name,
-                owner: board.owner
-            },
-            description: description,
-            start: start,
-            finish: finish,
-            owner: owner
-        });
-    }
-    function handleUpdate() {
-        return updateTask({
-            id: task.id,
-            name: name,
-            board: {
-                id: board.id,
-                name: board.name,
-                owner: board.owner
-            },
-            description: description,
-            start: start,
-            finish: finish,
-            owner: owner
-        });
-    }
-    function handleDelete() {
-        if(task !== null)
-            deleteTask(task.id).then(closeCallback).catch((e)=>setMessage('Ошибочка'));
-        else
-            throw 'delete without id!';
-    }
-    return (
-        <PopupComponent closeCallback={closeCallback}>
-        {message && <p>{message}</p>}
-        <form onSubmit={(e)=>{e.preventDefault(); setMessage(null); (task===null?handleCreate(e):handleUpdate(e)).then(closeCallback).catch((e)=>{if(e.response.status < 500) setMessage(e.response.data.message); else setMessage('Ошибочка'); console.log(e)})}}>
-            {task === null && <h1>Создание задачи</h1>}
-            {task !== null && <h1>Редактирование задачи</h1>}
-            <label>Название:<input type="text" name="name" value={name} onChange={(e)=>{setName(e.target.value)}} required></input></label><br/>
-            <label>Владелец:<input type="text" name="owner" value={owner} onChange={(e)=>{setOwner(e.target.value)}}></input></label><br/>
-            <label>Начало:<input type="datetime-local" name="start" value={start} onChange={(e)=>{setStart(e.target.value)}} required></input></label><br/>
-            <label>Конец:<input type="datetime-local" name="finish" value={finish} onChange={(e)=>{setFinish(e.target.value)}} required></input></label><br/>
-            <label>Описание:<textarea name="description" value={description} onChange={(e)=>{setDescription(e.target.value)}}></textarea></label><br/>
-            {task === null && <button style={{background: 'lime', borderRadius: 10, padding: '10px 20px', color: 'white', fontSize: 18}}>Создать задачу</button>}
-            {task !== null && <button style={{background: 'yellow', borderRadius: 10, padding: '10px 20px', color: 'black', fontSize: 18}}>Редактировать задачу</button>}
-        </form>
-        {task !== null && <button style={{background: 'red', borderRadius: 10, padding: '10px 20px', color: 'white', fontSize: 18}} onClick={handleDelete}>Удалить задачу</button>}
-        </PopupComponent>
-    )
-}
-
-function TaskComponent({task}) {
-    const id = task.id;
+const TaskStatusComponent = ({selectedStatus, onChange}) => {
     const statusesColors = {
         'FREE': 'rgb(60, 255, 60)',
         'OCCUPIED': 'rgb(222, 21, 21)',
@@ -160,24 +88,100 @@ function TaskComponent({task}) {
         'TROUBLES': 'Проблемы при выполнении задачи'
     }
     const statuses = [ 'FREE', 'OCCUPIED', 'INPROGRESS', 'FINISHED', 'CANCELED', 'BLOCKED', 'TROUBLES' ];
-    function handleUpdateTaskState(ev) {
-        task.status = ev.target.value;
-    }
-    return (<sup key={'task_sup'+id}>
-                <select style={{color: statusesColors[task.status], fontSize: 13, borderRadius: "10px"}} value={task.status} onChange={handleUpdateTaskState} key={"task_select"+id}>
+    return (<sup>
+                <select style={{color: statusesColors[selectedStatus], fontSize: 13, borderRadius: "10px"}} value={selectedStatus} onChange={onChange}>
                     {statuses.map(status => 
-                        (<option style={{color: statusesColors[status], fontSize: 13}} key={"task"+id+"_select_option"+status} title={statusesDescriptions[status]}>{status}</option>)
+                        (<option style={{color: statusesColors[status], fontSize: 13}} key={status} title={statusesDescriptions[status]}>{status}</option>)
                     )}
                 </select>
-            </sup>)
+            </sup>);
 }
+
+const TaskSettingsComponent = ({task, board, closeCallback}) => {
+    const [name, setName] = useState('');
+    const [owner, setOwner] = useState('');
+    const [description, setDescription] = useState('');
+    const [start, setStart] = useState(getCurrentTime());
+    const [finish, setFinish] = useState(getCurrentTime());
+    const [status, setStatus] = useState('FREE');
+    const [message, setMessage] = useState(null);
+    function getCurrentTime() {
+        // Получаем текущую дату и время
+        const now = new Date();
+        
+        // Преобразуем в формат YYYY-MM-DDTHH:MM
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0'); // Месяцы начинаются с 0
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}`;
+    }
+    useEffect(() => {
+        if(task == null) return;
+        setName(task.name);
+        setOwner(task.owner);
+        setDescription(task.description);
+        setStart(task.start);
+        setFinish(task.finish);
+        setStatus(task.status);
+    }, [task]);
+    function craftTask() {
+        return {
+            name: name,
+            board: {
+                id: board.id,
+                name: board.name,
+                owner: board.owner
+            },
+            description: description,
+            start: start,
+            finish: finish,
+            owner: owner,
+            status: status,
+            id: task===null?0:task.id
+        };
+    }
+    function handleCreate() {
+        return createTask(craftTask());
+    }
+    function handleUpdate() {
+        return updateTask(craftTask());
+    }
+    function handleDelete() {
+        if(task !== null)
+            deleteTask(task.id).then(closeCallback).catch((e)=>setMessage('Ошибочка'));
+    }
+    return (
+        <PopupComponent closeCallback={closeCallback}>
+        {message && <p>{message}</p>}
+        <form onSubmit={(e)=>{e.preventDefault(); setMessage(null); (task===null?handleCreate(e):handleUpdate(e)).then(closeCallback).catch((e)=>{if(e.response.status < 500) setMessage(e.response.data.message); else setMessage('Ошибочка'); console.log(e)})}}>
+            {task === null && <h1>Создание задачи</h1>}
+            {task !== null && <h1>Редактирование задачи</h1>}
+            <label>Название:<input type="text" name="name" value={name} onChange={(e)=>{setName(e.target.value)}} required></input></label><br/>
+            <label>Владелец:<input type="text" name="owner" value={owner} onChange={(e)=>{setOwner(e.target.value)}}></input></label><br/>
+            <label>Начало:<input type="datetime-local" name="start" value={start} onChange={(e)=>{setStart(e.target.value)}} required></input></label><br/>
+            <label>Конец:<input type="datetime-local" name="finish" value={finish} onChange={(e)=>{setFinish(e.target.value)}} required></input></label><br/>
+            <label>Описание:<textarea name="description" value={description} onChange={(e)=>{setDescription(e.target.value)}}></textarea></label><br/>
+            <label>Статус:<TaskStatusComponent selectedStatus={status} onChange={(e)=>setStatus(e.target.value)}/></label>
+            {task === null && <button style={{background: 'lime', borderRadius: 10, padding: '10px 20px', color: 'white', fontSize: 18}}>Создать задачу</button>}
+            {task !== null && <button style={{background: 'yellow', borderRadius: 10, padding: '10px 20px', color: 'black', fontSize: 18}}>Редактировать задачу</button>}
+        </form>
+        {task !== null && <button style={{background: 'red', borderRadius: 10, padding: '10px 20px', color: 'white', fontSize: 18}} onClick={handleDelete}>Удалить задачу</button>}
+        </PopupComponent>
+    )
+}
+
 const BoardListComponent = () => {
     const {isIn} = useAuth();
     const navigate = useNavigate();
     useEffect(()=>{
-        if(!isIn())
-            navigate("/auth");
-    },[]);
+        isIn()
+        .catch(()=>navigate("/auth"));
+    },[isIn, navigate]);
     const [boards, setBoards] = useState([]);
     const [message, setMessage] = useState('');
     const palitres = [[' #FFFFFF', ' #3498DB',' #E74C3C'],
@@ -191,15 +195,13 @@ const BoardListComponent = () => {
     function fetchTasks() {
         getOwnedBoards()
         .then((resp) => {
-            let c = 0;
             return Promise.all(
-                resp.data.map((board) => getBoardContain(board.id).then((tasks)=>{
+                resp.data.map((board) => getMyTasksOnBoard(board.id).then((tasks)=>{
                         return {
                             'id': board.id,
                             'tasks': tasks.data.list,
                             'name': board.name,
                             'show': false,
-                            'seqNum': c++,
                             'owner': board.owner
                         }
                     })
@@ -220,35 +222,38 @@ const BoardListComponent = () => {
     const [boardSettingsPopup, setBoardSettingsPopup] = useState(false);
     const [editedTask, setEditedTask] = useState(null);
     const [taskSettingsPopup, setTaskSettingsPopup] = useState(false);
+    function UTCToLocal(datetime){
+        return new Date(datetime).toLocaleString(navigator.language);
+    }
     return (
         <div>
             <BoardListHeader buttonCallback={()=>{setBoardSettingsPopup(true); setEditedBoard(null);}} />
             {boardSettingsPopup && <BoardSettinsComponent board={editedBoard} closeCallback={()=>{setBoardSettingsPopup(false);fetchTasks();}}/>}
             {taskSettingsPopup && <TaskSettingsComponent task={editedTask} board={editedBoard} closeCallback={()=>{setTaskSettingsPopup(false);fetchTasks();}}/>}
-            {message && <p key="message">{message}</p>}
-            {boards.length === 0 && <p key="no boards">Нет задач!</p>}
-            <div key="boardsGrid" style={{display: "grid", gap: "10px"}}>
-            {boards.map((board)=>(
-                <div key={'board'+board.id} style={{background: palitres[board.seqNum%palitres.length][0], width: "30vw", gridRow: Math.floor(board.seqNum/3)+1, gridColumn: board.seqNum%3+1, border: "2px solid black"}}>
-                    <div key={"board_header"+board.id} onClick={()=>toggleBoard(board)} style={{cursor: 'pointer', margin: 3}}>
+            {message && <p>{message}</p>}
+            {boards.length === 0 && <p>Нет задач!</p>}
+            <div style={{display: "grid", gap: "10px"}}>
+            {boards.map((board, num)=>(
+                <div key={board.id} style={{background: palitres[num%palitres.length][0], width: "30vw", gridRow: Math.floor(num/3)+1, gridColumn: num%3+1, border: "2px solid black"}}>
+                    <div key={board.id} onClick={()=>toggleBoard(board)} style={{cursor: 'pointer', margin: 3}}>
                         <h1 style={{margin: 0}}>
                             <p style={{display:"inline", fontWeight: 'normal'}}>
                                 {board.show?'\u2228':'>'}
                             </p>
                             {board.name}
-                            <img src='./icons/update.png' height="20em" width="20em" onClick={()=>{setEditedBoard(board); setBoardSettingsPopup(true);}}/>
+                            <img src='./icons/update.png' alt="Редактировать доску" height="20em" width="20em" onClick={()=>{setEditedBoard(board); setBoardSettingsPopup(true);}} />
                         </h1>
                     </div>
-                    <div key={"board_body"+board.id} style={{maxHeight: '30vh', overflow: 'auto'}}>
-                        {board.show && board.tasks.map((task)=>(
-                            <div key={'task'+task.id} style={{background: task.id%2===0?palitres[board.seqNum%palitres.length][1]:palitres[board.seqNum%palitres.length][2], padding: 0, margin: 0}}>
-                                <h2 style={{...inheritedStyles, textDecoration: ['FINISHED', 'CANCELED'].includes(task.status)?'line-through':''}}>{task.name}<TaskComponent task={task} /></h2>
-                                <p style={inheritedStyles}>Начало: {task.start}</p>
-                                <p style={inheritedStyles}>Конец: {task.finish}</p>
+                    <div style={{maxHeight: '30vh', overflow: 'auto'}}>
+                        {board.show && board.tasks.map((task, taskNum)=>(
+                            <div key={task.id} style={{background: taskNum%2===0?palitres[num%palitres.length][1]:palitres[num%palitres.length][2], padding: 0, margin: 0}}>
+                                <h2 style={{...inheritedStyles, textDecoration: ['FINISHED', 'CANCELED'].includes(task.status)?'line-through':''}}>{task.id}. {task.name}<img src='./icons/update.png' alt="Редактировать задачу" height="20em" width="20em" onClick={()=>{setEditedBoard(board); setEditedTask(task); setTaskSettingsPopup(true);}}/><TaskStatusComponent selectedStatus={task.status} onChange={(e)=>{task.status = e.target.value; updateTask(task).then(()=>fetchTasks())}}/></h2>
+                                <p style={inheritedStyles}>Начало: {UTCToLocal(task.start)}</p>
+                                <p style={inheritedStyles}>Конец: {UTCToLocal(task.finish)}</p>
                             </div>
                         ))}
                         {board.show && 
-                            <div key={'add_task'+board.id}>
+                            <div>
                                 <h2 style={{...inheritedStyles, cursor: 'pointer'}} onClick={()=>{setEditedTask(null); setEditedBoard(board); setTaskSettingsPopup(true);}}><p style={{display: 'inline', color: 'lime'}}>+</p>Добавить задачу</h2>
                             </div>
                         }

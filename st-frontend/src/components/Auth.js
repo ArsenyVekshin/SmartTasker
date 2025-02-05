@@ -53,9 +53,8 @@ const AuthComponent = () => {
     };
     const navigate = useNavigate();
     useEffect(()=>{
-        if(isIn())
-            navigate('/list');
-    },[]);
+        isIn().then((e)=>navigate('/list')).catch((e)=>{});
+    },[isIn, navigate]);
     return (
         <div style={pagestyles}>
             <h1 style={{gridRow: 1, color: ' #edf7f6'}}>Очень даже неплохой дизайн для сайта</h1>

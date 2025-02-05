@@ -1,5 +1,5 @@
 import React, {createContext, useState, useContext, useEffect} from 'react';
-import {auth as authApi, register as registerApi, changeToken, getToken} from '../services/api.js';
+import {auth as authApi, register as registerApi, changeToken, getMyBoards} from '../services/api.js';
 const AuthContext = createContext();
 
 export function AuthProvider({children}) {
@@ -22,9 +22,7 @@ export function AuthProvider({children}) {
         setToken(null);
         setIsAdmin(false);
     }
-    function isIn() {
-        return token != null;
-    }
+    const isIn = getMyBoards;
     useEffect(()=>{
         changeToken(token);
         if(token)

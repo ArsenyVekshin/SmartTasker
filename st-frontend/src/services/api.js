@@ -27,14 +27,10 @@ export function changeToken(token) {
     }
 }
 
-export function getToken() {
-    return kanbanApi.defaults.headers.common.Authorization;
-}
-
 export const getOwnedBoards = () => kanbanApi.get('/owned');
 export const getBoardContain = (board_id) => kanbanApi.get(`/${board_id}/tasks`);
 export const getMyBoards = () => kanbanApi.get('/my');
-export const getBoardTasks = (board_id) => kanbanApi.get(`/${board_id}/tasks/my`);
+export const getMyTasksOnBoard = (board_id) => kanbanApi.get(`/${board_id}/tasks/my`);
 
 export const createBoard = (name, owner) => kanbanApi.post('', {name: name, owner: owner});
 export const updateBoard = (id, name, owner) => kanbanApi.put('', {id: id, name: name, owner: owner});
@@ -50,3 +46,5 @@ const tasksApi = axios.create({
 export const createTask = (task) => tasksApi.post('', task);
 export const updateTask = (task) => tasksApi.put('', task)
 export const deleteTask = (id) => tasksApi.delete(`/${id}`)
+
+export const getTask = (id) => tasksApi.get(`/${id}`);
