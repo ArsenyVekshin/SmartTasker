@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useAuth} from '../context/auth';
-import { createBoard, createTask, deleteBoard, deleteTask, getMyTasksOnBoard, getOwnedBoards, updateBoard, updateTask } from '../services/api';
+import { createBoard, createTask, deleteBoard, deleteTask, getMyTasksOnBoard, getOwnedBoards, getTask, updateBoard, updateTask } from '../services/api';
 const BoardListHeader = ({buttonCallback}) => {
     return (
         <div style={{background: 'rgb(231, 231, 231)', float: 'right'}}>
@@ -215,6 +215,9 @@ const BoardListComponent = () => {
     const inheritedStyles = {margin: 0};
     function toggleBoard(board) {
         board.show = !board.show;
+        updateBoards();
+    }
+    function updateBoards(){
         const newBoards = [...boards];
         setBoards(newBoards);
     }
@@ -247,7 +250,7 @@ const BoardListComponent = () => {
                     <div style={{maxHeight: '30vh', overflow: 'auto'}}>
                         {board.show && board.tasks.map((task, taskNum)=>(
                             <div key={task.id} style={{background: taskNum%2===0?palitres[num%palitres.length][1]:palitres[num%palitres.length][2], padding: 0, margin: 0}}>
-                                <h2 style={{...inheritedStyles, textDecoration: ['FINISHED', 'CANCELED'].includes(task.status)?'line-through':''}}>{task.id}. {task.name}<img src='./icons/update.png' alt="Редактировать задачу" height="20em" width="20em" onClick={()=>{setEditedBoard(board); setEditedTask(task); setTaskSettingsPopup(true);}}/><TaskStatusComponent selectedStatus={task.status} onChange={(e)=>{task.status = e.target.value; updateTask(task).then(()=>fetchTasks())}}/></h2>
+                            <h2 style={{...inheritedStyles, textDecoration: ['FINISHED', 'CANCELED'].includes(task.status)?'line-through':''}}>{task.id}. {task.name}<img src='./icons/update.png' alt="Редактировать задачу" height="20em" width="20em" onClick={()=>{setEditedBoard(board); setEditedTask(task); setTaskSettingsPopup(true);}}/><TaskStatusComponent selectedStatus={task.status} onChange={(e)=>{task.status = e.target.value; updateTask(task).then(()=>getTask(task.id).then((resp)=>{task=resp.data; updateBoards();}))}}/></h2>
                                 <p style={inheritedStyles}>Начало: {UTCToLocal(task.start)}</p>
                                 <p style={inheritedStyles}>Конец: {UTCToLocal(task.finish)}</p>
                             </div>
