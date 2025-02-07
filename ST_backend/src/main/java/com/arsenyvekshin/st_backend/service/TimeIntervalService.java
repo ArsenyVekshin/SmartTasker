@@ -33,8 +33,8 @@ public class TimeIntervalService {
         return timeIntervalRepository.findAllBetweenTimesForUser(user, start, end).stream().map(TimeIntervalDto::new).toList();
     }
 
-    public List<TimeIntervalDto> getUserIntervalsBetween(User user, LocalDateTime start, LocalDateTime end) {
-        return timeIntervalRepository.findAllBetweenTimesForUser(user, start, end).stream().map(TimeIntervalDto::new).toList();
+    public List<TimeInterval> getUserIntervalsBetween(User user, LocalDateTime start, LocalDateTime end) {
+        return timeIntervalRepository.findAllBetweenTimesForUser(user, start, end);
     }
 
 

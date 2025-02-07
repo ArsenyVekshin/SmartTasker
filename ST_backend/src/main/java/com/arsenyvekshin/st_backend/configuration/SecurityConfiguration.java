@@ -46,8 +46,8 @@ public class SecurityConfiguration {
                 // Настройка доступа к конечным точкам
                 .authorizeHttpRequests(request -> request
                         // Можно указать конкретный путь, * - 1 уровень вложенности, ** - любое количество уровней вложенности
-                        .requestMatchers("/**").permitAll()
-                        //.requestMatchers("/user/**", "/route/**", "/route/add/file", "func/**", "/log/**", "/file/**").authenticated()
+                        //.requestMatchers("/**").permitAll()
+                        .requestMatchers("api/**").authenticated()
                         //.requestMatchers(.hasRole("ADMIN")
                         .anyRequest().permitAll())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))

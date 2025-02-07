@@ -31,8 +31,8 @@ public class TimeIntervalDto {
     private String owner;
 
     @JsonProperty
-    @Min(value = 600, message = "Перекур дольше длится, камон... Давай хотя-бы 10 минут")
-    @Max(value = 28800, message = "Ты можешь столько работать подряд, серьезно? (8 - максимум, не ври себе)")
+    @Min(value = 10, message = "Перекур дольше длится, камон... Давай хотя-бы 10 минут")
+    @Max(value = 600, message = "Ты можешь столько работать подряд, серьезно? (8 - максимум, не ври себе)")
     private long duration; // длительность в минутах
 
     @JsonProperty
@@ -45,8 +45,10 @@ public class TimeIntervalDto {
 
     public TimeIntervalDto(TimeInterval interval) {
         this.id = interval.getId();
-        this.taskId = interval.getTask().getId();
-        this.meeting_id = interval.getMeeting().getId();
+        if(interval.getTask() != null)
+            this.taskId = interval.getTask().getId();
+        if(interval.getMeeting() != null)
+            this.meeting_id = interval.getMeeting().getId();
         this.owner = interval.getOwner().getUsername();
         this.duration = interval.getDuration().toMinutes();
         this.start = interval.getStart();

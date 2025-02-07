@@ -38,8 +38,8 @@ public class TimeInterval implements OwnedObject {
     private User owner;
 
     @Column(name = "duration")
-    @Min(value = 600, message = "Перекур дольше длится, камон... Давай хотя-бы 10 минут")
-    @Max(value = 28800, message = "Ты можешь столько работать подряд, серьезно? (8 - максимум, не ври себе)")
+    @Min(value = 10, message = "Перекур дольше длится, камон... Давай хотя-бы 10 минут")
+    @Max(value = 600, message = "Ты можешь столько работать подряд, серьезно? (8 - максимум, не ври себе)")
     private Duration duration;
 
     @NotBlank(message = "Время начала интервала не может быть пустым")
@@ -77,6 +77,22 @@ public class TimeInterval implements OwnedObject {
         else if(obj.getClass() == Meeting.class)
             this.meeting = (Meeting) obj;
         else throw new IllegalArgumentException("Данный клас не может резервировать временные слоты");
+    }
+
+    public boolean isCapableFor(Meeting meeting) {
+        return  !this.locked
+                && this.meeting != null
+                && this.task != null
+                && this.start.isBefore(meeting.getStart())
+                && this.finish.isAfter(meeting.getFinish());
+    }
+
+    public boolean isCapableFor(Task task) {
+        return  !this.locked
+                && this.meeting != null
+                && this.task != null
+                && this.start.isBefore(task.getStart())
+                && this.finish.isAfter(task.getFinish());
     }
 
 }

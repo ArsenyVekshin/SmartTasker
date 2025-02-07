@@ -92,4 +92,9 @@ public class TaskService {
     }
 
 
+    public List<Task> getUserTasks() {
+        User user = userService.getCurrentUser();
+        return taskRepository.findTasksToEmplace(user);
+    }
+
 }

@@ -12,7 +12,7 @@ import java.util.Set;
 
 @Data
 @Entity(name = "Meeting")
-public class Meeting implements AllocatableObject{
+public class Meeting implements AllocatableObject, Cloneable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -81,4 +81,14 @@ public class Meeting implements AllocatableObject{
     }
 
     public int membersNum(){return members.size();}
+
+    @Override
+    public Meeting clone() {
+        try {
+            Meeting clone = (Meeting) super.clone();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

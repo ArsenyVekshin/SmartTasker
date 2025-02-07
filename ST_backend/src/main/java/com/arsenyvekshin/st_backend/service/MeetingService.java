@@ -5,6 +5,7 @@ import com.arsenyvekshin.st_backend.dto.MeetingDto;
 import com.arsenyvekshin.st_backend.dto.PlaceDto;
 import com.arsenyvekshin.st_backend.entity.Meeting;
 import com.arsenyvekshin.st_backend.entity.Place;
+import com.arsenyvekshin.st_backend.entity.User;
 import com.arsenyvekshin.st_backend.repository.MeetingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -91,6 +92,10 @@ public class MeetingService {
     public List<PlaceDto> getSuitablePlacesForMeeting(long id) {
         Meeting meeting = find(id);
         return findSuitablePlacesForMeeting(meeting).stream().map(PlaceDto::new).toList();
+    }
+
+    public List<Meeting> getAllUserMeetings(User user) {
+        return meetingRepository.findByMembersId(user.getId());
     }
 
 }
