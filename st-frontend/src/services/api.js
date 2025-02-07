@@ -20,10 +20,12 @@ export function changeToken(token) {
     if(token) {
         kanbanApi.defaults.headers.common.Authorization = 'Bearer '+token;
         tasksApi.defaults.headers.common.Authorization = 'Bearer '+token;
+        scheduleApi.defaults.headers.common.Authorization = 'Bearer '+token;
     }
     else {
         kanbanApi.defaults.headers.common.Authorization = null;
         tasksApi.defaults.headers.common.Authorization = null;
+        scheduleApi.defaults.headers.common.Authorization = null;
     }
 }
 
@@ -48,3 +50,14 @@ export const updateTask = (task) => tasksApi.put('', task)
 export const deleteTask = (id) => tasksApi.delete(`/${id}`)
 
 export const getTask = (id) => tasksApi.get(`/${id}`);
+
+const scheduleApi = axios.create({
+    baseURL: host+'/api/schedule',
+    headers: {
+        'Content-Type': 'application/json',
+    }
+});
+
+export const generateSchedule = () => scheduleApi.post('/generate');
+export const getSchedule = (date) => scheduleApi.get(`/${date}`);
+export const setWorkday = (dayStart, dayEnd) => scheduleApi.post(`/workday?dayStart=${dayStart}&dayEnd=${dayEnd}`)
