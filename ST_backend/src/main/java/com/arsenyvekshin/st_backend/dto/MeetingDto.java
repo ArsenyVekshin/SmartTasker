@@ -45,6 +45,10 @@ public class MeetingDto {
     @JsonProperty
     private PlaceDto place;
 
+    @JsonProperty
+    private String owner;
+
+
     public MeetingDto(Meeting obj) {
         this.id = obj.getId();
         this.name = obj.getName();
@@ -53,8 +57,12 @@ public class MeetingDto {
         this.begin = obj.getStart();
         this.end = obj.getFinish();
         this.repeatPeriod = obj.getRepeatPeriod().toMinutes();
-        this.keypoint = new KeypointDto(obj.getKeypoint());
-        this.place = new PlaceDto(obj.getPlace());
+        if (obj.getKeypoint() != null)
+            this.keypoint = new KeypointDto(obj.getKeypoint());
+        if (obj.getPlace() != null)
+            this.place = new PlaceDto(obj.getPlace());
+        if (obj.getOwner() != null)
+            this.owner = obj.getOwner().getUsername();
     }
 
 

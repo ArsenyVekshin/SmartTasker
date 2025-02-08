@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
@@ -15,11 +17,10 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
-    @Operation(summary = "Подтвердить роль ADMIN")
-    @PostMapping("/approve")
-    public MessageInfoDto approveUser(@RequestBody MessageInfoDto request) {
-        userService.approveUser(request.getMessage());
-        return new MessageInfoDto("successful");
+    @Operation(summary = "Получить список пользователей")
+    @PostMapping("/list")
+    public List<String> getUserList() {
+        return userService.getUsersList();
     }
 
 

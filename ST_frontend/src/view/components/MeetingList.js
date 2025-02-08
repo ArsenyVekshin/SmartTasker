@@ -12,7 +12,8 @@ const MeetingList = ({ meetings }) => {
             begin: "2025-02-08T09:00:00Z",
             end: "2025-02-08T09:30:00Z",
             place: { id: 1, name: "Конференц-зал A", capacity: 10, available: true },
-            keypoint: { id: 1, name: "Основной вопрос", timestamp: "2025-02-08T09:15:00Z" }
+            keypoint: { id: 1, name: "Основной вопрос", timestamp: "2025-02-08T09:15:00Z" },
+            members: ["nill kiggers", "kill yourself"]
         },
         {
             id: 2,
@@ -21,7 +22,8 @@ const MeetingList = ({ meetings }) => {
             begin: "2025-02-08T11:00:00Z",
             end: "2025-02-08T12:00:00Z",
             place: { id: 2, name: "Переговорная 2", capacity: 8, available: false },
-            keypoint: { id: 2, name: "Презентация результатов", timestamp: "2025-02-08T11:30:00Z" }
+            keypoint: { id: 2, name: "Презентация результатов", timestamp: "2025-02-08T11:30:00Z" },
+            members: ["nill kiggers", "sad die", "kill yourself"]
         }
     ];
     meetings = testMeetings;
@@ -47,7 +49,7 @@ const MeetingList = ({ meetings }) => {
                     </ListItem>
                 ))}
             </List>
-            <MeetingDialog meeting={selectedMeeting} editedName={editedName} setEditedName={setEditedName} onClose={handleClose} />
+            <MeetingDialog meeting={selectedMeeting} onClose={handleClose} />
         </>
     );
 };

@@ -60,6 +60,10 @@ public class Meeting implements AllocatableObject, Cloneable{
     @JoinColumn(name = "task_id")
     private Task task;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
     @PostPersist
     protected void onCreate() {
         this.duration = Duration.between(this.start, this.finish);

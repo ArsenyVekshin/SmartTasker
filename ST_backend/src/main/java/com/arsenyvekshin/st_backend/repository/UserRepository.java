@@ -13,5 +13,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("select u.username from Users u where u.roleRequest = true")
     List<String> getUnapprovedUsers();
+
+    @Query("select u.username from Users u")
+    List<String> getUsersList();
 }
 

@@ -72,6 +72,10 @@ public class MeetingService {
             }
         }
 
+        if (dto.getOwner() != null) {
+            meeting.setOwner(userService.getByUsername(dto.getOwner()));
+        }
+
         return meeting;
     }
 
