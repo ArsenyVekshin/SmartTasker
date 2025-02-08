@@ -1,0 +1,7 @@
+.error-message {
+    position: fixed;
+    right: 10px;
+    bottom: 20px;
+    width: 300px;
+    z-index: 1000;
+}
