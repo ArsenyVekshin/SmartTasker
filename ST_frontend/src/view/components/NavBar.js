@@ -10,6 +10,8 @@ import AccountSwitch from '@mui/icons-material/SwitchAccount';
 import {useDispatch, useSelector} from "react-redux";
 import {logOut} from "../../store/userSlice";
 
+
+import GroupsIcon from '@mui/icons-material/Groups';
 import ViewKanbanIcon from '@mui/icons-material/ViewKanban';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 const NavBar = () => {
@@ -48,6 +50,10 @@ const NavBar = () => {
                     <Button color="inherit" onClick={() => navigate('/schedule')}>
                         <CalendarMonthIcon sx={{marginRight: 1}}/>
                         Schedule
+                    </Button>
+                    <Button color="inherit" onClick={() => navigate('/meetings')}>
+                        <GroupsIcon sx={{marginRight: 1}}/>
+                        Meetings
                     </Button>
                 </div>
 

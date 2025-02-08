@@ -15,6 +15,7 @@ import {useSelector} from "react-redux";
 import ErrorMessage from "./view/components/ErrorMessage";
 import KanbanBoard from "./view/components/KanbanBoard";
 import WeeklyCalendar from "./view/components/WeeklyCalendar";
+import MeetingList from "./view/components/MeetingList";
 
 const App = () => {
     const user = useSelector(state => state.user);
@@ -40,6 +41,7 @@ const App = () => {
                                             <Route path="/main" element={<KanbanBoard/>}/>
                                             <Route path="/kanban" element={<KanbanBoard/>}/>
                                             <Route path="/schedule" element={<WeeklyCalendar/>}/>
+                                            <Route path="/meetings" element={<MeetingList/>}/>
                                             <Route path="*" element={<PageNotFound/>}/>
                                         </>
                                     ) : (
