@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import {Card, CardContent, Typography, Chip, IconButton} from "@mui/material";
 import TaskDialog from "./TaskDialog";
-import { Check as CheckIcon, Edit as EditIcon  } from "@mui/icons-material";
+import { Check as CheckIcon, Edit as EditIcon, Delete as DeleteIcon  } from "@mui/icons-material";
 const TaskStatusChip = ({ task }) => {
     // Функция для определения стиля в зависимости от статуса
     const getStatusStyle = (status) => {
@@ -34,7 +34,7 @@ const TaskStatusChip = ({ task }) => {
     );
 };
 
-const TaskCard = ({ task, provided, onClick }) => {
+const TaskCard = ({ task, provided, onClick, onDeleteClick, onUpdate, onChange, onCancel }) => {
     const [openDialog, setOpenDialog] = useState(false);
 
     // Открытие диалога редактирования
@@ -46,6 +46,8 @@ const TaskCard = ({ task, provided, onClick }) => {
     const handleDialogClose = () => {
         setOpenDialog(false);
     };
+
+    const handleDelete = onDeleteClick;
 
     // Обработка клика на кнопку выбора
     const handleButtonClick = (event) => {
@@ -102,10 +104,20 @@ const TaskCard = ({ task, provided, onClick }) => {
                 >
                     <EditIcon />
                 </IconButton>
+                <IconButton
+                    onClick={handleDelete}
+                    style={{
+                        position: "absolute",
+                        top: 8,
+                        right: 72,
+                    }}
+                >
+                    <DeleteIcon />
+                </IconButton>
             </Card>
 
             {/* Диалог изменения задачи */}
-            {openDialog && <TaskDialog task={task} onClose={handleDialogClose} />}
+            {openDialog && <TaskDialog task={task} onClose={()=>{handleDialogClose(); onUpdate(task);}} onCancel={()=>{handleDialogClose(); onCancel();}} onUpdate={onChange} />}
         </>
     );
 };

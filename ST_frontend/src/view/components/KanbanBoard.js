@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Container,
     Grid,
@@ -13,20 +13,42 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import TaskCard from "./task/TaskCard";
 import TaskDialog from "./task/TaskDialog";
+import BoardDialog from "./board/BoardDialog";
+import { createBoard, deleteBoard, updateBoard, createTask, deleteTask, updateTask, getMyTasksOnBoards, getOwnedBoards, getTask } from '../../service/Service';
 
-const initialBoards = [
-    { id: 1, name: "Board 1", owner: "User A" },
-    { id: 2, name: "Board 2", owner: "User B" },
-];
+// const initialBoards = [
+//     { id: 1, name: "Board 1", owner: "User A" },
+//     { id: 2, name: "Board 2", owner: "User B" },
+// ];
 
-const initialTasks = [];
+// const initialTasks = [];
 
 const KanbanBoard = () => {
-    const [tasks, setTasks] = useState(initialTasks);
-    const [boards, setBoards] = useState(initialBoards);
+    const [tasks, setTasks] = useState([]);
+    const [boards, setBoards] = useState([]);
     const [selectedTask, setSelectedTask] = useState(null);
     const [menuAnchor, setMenuAnchor] = useState(null);
     const [selectedBoard, setSelectedBoard] = useState(null);
+    const [openDialog, setOpenDialog] = useState(false);
+
+    const importTasks = () => getMyTasksOnBoards()
+        .then((resp)=>{
+            let localBoards = resp.map((boardContentDto)=>(
+                boardContentDto.list[0].board
+            ));
+            getOwnedBoards().then((arr)=>{
+                arr.forEach(i=>{
+                    if(!localBoards.map(b=>b.id).includes(i.id))
+                        localBoards = localBoards.concat(i);
+                    });
+                    setBoards(localBoards);
+                });
+            setTasks(resp.map((boardContentDto)=>(
+                boardContentDto.list
+            )).reduce((partSum, a)=>partSum.concat(a)));
+        })
+
+    useEffect(()=>{importTasks()}, [])
 
     const onDragEnd = (result) => {
         if (!result.destination) return;
@@ -44,34 +66,29 @@ const KanbanBoard = () => {
     };
 
     const handleCreateTask = (boardId) => {
-        const newTask = {
-            id: tasks.length + 1,
+        setSelectedTask({
             name: `New Task ${tasks.length + 1}`,
             description: "Description here...",
             status: "FREE",
-            owner: "User A",
             board: { id: boardId },
             duration: 60,
             start: new Date().toISOString(),
             finish: new Date(Date.now() + 3600000).toISOString(),
             repeatPeriod: 0,
             keypoint: {
-                id: 0,
                 name: "Keypoint",
                 description: "Milestone",
                 timestamp: new Date().toISOString(),
             },
-        };
-        setTasks([...tasks, newTask]);
+        });
     };
 
     const handleCreateBoard = () => {
-        const newBoard = {
-            id: boards.length + 1,
+        setSelectedBoard({
             name: `Board ${boards.length + 1}`,
-            owner: "User A",
-        };
-        setBoards([...boards, newBoard]);
+            owner: localStorage.getItem('username'),
+        });
+        setOpenDialog(true);
     };
 
     const handleMenuOpen = (event, board) => {
@@ -120,6 +137,10 @@ const KanbanBoard = () => {
                                                                 task={task}
                                                                 provided={provided}
                                                                 onClick={() => setSelectedTask(task)}
+                                                                onDeleteClick={() => deleteTask(task.id).then(importTasks)}
+                                                                onChange={(updatedTask)=>setTasks(tasks.map((task)=>task.id===updatedTask.id?updatedTask:task))}
+                                                                onUpdate={(updatedTask)=>updateTask(updatedTask).then(importTasks)}
+                                                                onCancel={()=>getTask(task.id).then(importTasks)}
                                                             />
                                                         )}
                                                     </Draggable>
@@ -142,11 +163,22 @@ const KanbanBoard = () => {
                     ))}
                 </Grid>
                 <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMenuClose}>
-                    <MenuItem onClick={handleMenuClose}>Редактировать</MenuItem>
-                    <MenuItem onClick={handleMenuClose}>Удалить</MenuItem>
+                    <MenuItem onClick={(e)=>{setOpenDialog(true); setMenuAnchor(false);}}>Редактировать</MenuItem>
+                    <MenuItem onClick={(e)=>{deleteBoard(selectedBoard.id).then(importTasks); setMenuAnchor(false);}}>Удалить</MenuItem>
                 </Menu>
             </Container>
-            <TaskDialog task={selectedTask} onClose={() => setSelectedTask(null)} />
+            <TaskDialog 
+                task={selectedTask}
+                onClose={()=>{setSelectedTask(null); createTask(selectedTask).then(importTasks);}}
+                onUpdate={(newTask)=>setSelectedTask({...newTask})}
+                onCancel={()=>setSelectedTask(null)}
+            />
+            {openDialog && <BoardDialog 
+                board={selectedBoard}
+                onClose={() => {setSelectedBoard(null); setOpenDialog(false); (selectedBoard.id === undefined?createBoard(selectedBoard):updateBoard(selectedBoard)).then(importTasks);}}
+                onUpdate={() => {setSelectedBoard({...selectedBoard})}}
+                onCancel={() => {setSelectedBoard(null); setOpenDialog(false);}}
+            />}
         </DragDropContext>
     );
 };

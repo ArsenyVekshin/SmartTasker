@@ -13,20 +13,26 @@ import {
     FormControl,
 } from "@mui/material";
 
-const TaskDialog = ({ task, onClose }) => {
+const TaskDialog = ({ task, onClose, onUpdate, onCancel }) => {
     if (!task) return null;
-
+    if (task.keypoint === null)
+        task.keypoint = {
+            name: "Keypoint",
+            description: "Milestone",
+            timestamp: new Date().toISOString(),
+        };
     return (
         <Dialog open={Boolean(task)} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>Edit Task</DialogTitle>
             <DialogContent>
-                <TextField fullWidth margin="dense" label="Name" value={task.name} />
-                <TextField fullWidth margin="dense" label="Description" value={task.description} />
+                <TextField fullWidth margin="dense" label="Name" value={task.name} onChange={(e)=>{task.name = e.target.value; onUpdate(task)}} />
+                <TextField fullWidth margin="dense" label="Owner" value={task.owner} onChange={(e)=>{task.owner = e.target.value; onUpdate(task)}} />
+                <TextField fullWidth margin="dense" label="Description" value={task.description} onChange={(e)=>{task.description = e.target.value; onUpdate(task)}} />
 
                 {/* Status Field as Select */}
                 <FormControl fullWidth margin="dense">
                     <InputLabel>Status</InputLabel>
-                    <Select value={task.status} label="Status">
+                    <Select value={task.status} label="Status" onChange={(e)=>{task.status = e.target.value; onUpdate(task)}} >
                         <MenuItem value="FREE">FREE</MenuItem>
                         <MenuItem value="OCCUPIED">OCCUPIED</MenuItem>
                         <MenuItem value="INPROGRESS">INPROGRESS</MenuItem>
@@ -42,23 +48,24 @@ const TaskDialog = ({ task, onClose }) => {
                     fullWidth
                     margin="dense"
                     label="Repeat Period"
-                    type="datetime-local"
                     value={task.repeatPeriod}
                     InputLabelProps={{
                         shrink: true,
                     }}
+                    onChange={(e)=>{task.repeatPeriod = e.target.value; onUpdate(task)}}
                 />
 
-                <TextField fullWidth margin="dense" label="Start" type="datetime-local" value={task.start} />
-                <TextField fullWidth margin="dense" label="Finish" type="datetime-local" value={task.finish} />
+                <TextField fullWidth margin="dense" label="Start" type="datetime-local" value={task.start.replace('Z','')} onChange={(e)=>{task.start = e.target.value; onUpdate(task)}} />
+                <TextField fullWidth margin="dense" label="Finish" type="datetime-local" value={task.finish.replace('Z','')} onChange={(e)=>{task.finish = e.target.value; onUpdate(task)}} />
 
                 <Typography variant="h6" gutterBottom>Keypoint</Typography>
                 <TextField fullWidth margin="dense" label="Keypoint Name" value={task.keypoint.name} />
                 <TextField fullWidth margin="dense" label="Keypoint Description" value={task.keypoint.description} />
-                <TextField fullWidth margin="dense" label="Keypoint Timestamp" type="datetime-local" value={task.keypoint.timestamp} />
+                <TextField fullWidth margin="dense" label="Keypoint Timestamp" type="datetime-local" value={task.keypoint.timestamp.replace('Z','')} />
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} color="primary">Close</Button>
+                <Button onClick={onClose} color="primary">{task.id===undefined?"Add task":"Edit task"}</Button>
+                <Button onClick={onCancel} color="primary">Cancel</Button>
             </DialogActions>
         </Dialog>
     );

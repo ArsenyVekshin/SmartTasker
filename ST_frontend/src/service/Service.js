@@ -4,9 +4,11 @@ import {showError, showSuccess} from "../view/components/ErrorMessage";
 const API_URL = 'http://188.134.94.41:32810';
 const AUTH_URL = API_URL + '/auth';
 const USER_URL = API_URL + '/user';
-const ROUTE_URL = API_URL + '/route';
-const LOG_URL = API_URL + '/log';
-const FILE_URL = API_URL + '/file';
+const MEETINGS = API_URL + '/api/meetings';
+const KANBAN = API_URL + '/api/kanban';
+const BOARDS = KANBAN + '/boards';
+const TASKS = KANBAN + '/tasks';
+const SCHEDULE = API_URL + '/api/schedule';
 
 const token = store.getState().user.token;
 
@@ -25,7 +27,7 @@ async function makeRequest(url, method, body = null, fileFlag = null) {
             headers,
             body: formData,
         });
-    } else if (method === 'POST') {
+    } else if (method === 'POST' || method === 'PUT') {
         response = await fetch(url, {
             method,
             headers,
@@ -72,61 +74,78 @@ export async function approveUserRequest(user) {
     });
 }
 
-export async function approveUserListRequest() {
-    return makeRequest(USER_URL + "/approve/list", 'GET');
+export async function getMeeting(id) {
+    return makeRequest(MEETINGS + `/${id}`, 'GET');
 }
 
-export async function getRoutesListRequest() {
-    return makeRequest(ROUTE_URL + "/list", 'GET');
+export async function updateMeeting(id, meeting) {
+    return makeRequest(MEETINGS + `/${id}`, 'PUT', meeting, false);
 }
 
-export async function getSortedRoutesListRequest(sign, field, value) {
-    return makeRequest(ROUTE_URL + `/list/sorted?sign=${sign}&field=${field}&value=${value}`, 'GET');
+export async function deleteMeeting(id) {
+    return makeRequest(MEETINGS + `/${id}`, 'DELETE');
 }
 
-export async function addRouteRequest(route) {
-    return makeRequest(ROUTE_URL + "/add", 'POST', route);
+export async function meeting_find_place(id) {
+    return makeRequest(MEETINGS + `/${id}/find-place`, 'POST');
 }
 
-export async function multiAddRoutesRequest(file) {
-    return makeRequest(ROUTE_URL + "/add/file", 'POST', file, true);
+export async function createMetting(id) {
+    return makeRequest(MEETINGS + `/${id}`, 'DELETE');
 }
 
-export async function updateRouteRequest(route) {
-    return makeRequest(ROUTE_URL + "/update", 'POST', route);
+export async function updateBoard(board) {
+    return makeRequest(BOARDS, 'PUT', board, false);
 }
 
-export async function deleteRouteRequest(route) {
-    return makeRequest(ROUTE_URL + "/delete", 'POST', {
-        'message': route.id
-    });
+export async function createBoard(board) {
+    return makeRequest(BOARDS, 'POST', board, false);
 }
 
-export async function deleteAllRoutesRequest() {
-    return makeRequest(ROUTE_URL + "/delete/all", 'POST', {});
+export async function deleteBoard(boardId) {
+    return makeRequest(BOARDS + `/${boardId}`, 'DELETE');
 }
 
-
-export async function getTotalRatingRequest() {
-    return makeRequest(ROUTE_URL + "/func/total-rating", 'GET');
+export async function getTasksOnBoard(boardId) {
+    return makeRequest(BOARDS + `/${boardId}/tasks`, 'GET');
 }
 
-export async function getMaxToRequest() {
-    return makeRequest(ROUTE_URL + "/func/max-to", 'GET');
+export async function getMyTasksOnBoard(boardId) {
+    return makeRequest(BOARDS + `/${boardId}/tasks/my`, 'GET');
 }
 
-export async function getGreatestRateRequest(rating) {
-    return makeRequest(ROUTE_URL + "/func/greatest-rate?rating=" + rating, 'GET');
+export async function getOwnedBoards() {
+    return makeRequest(BOARDS + "/owned", 'GET');
 }
 
-export async function getAllRoutesByRequest(from_id, to_id) {
-    return makeRequest(ROUTE_URL + `/func/all-routes-by?from_location_id=${from_id}&to_location_id=${to_id}`, 'GET');
+export async function getMyTasksOnBoards() {
+    return makeRequest(BOARDS + "/my", 'GET');
 }
 
-export async function getImportLogRequest() {
-    return makeRequest(LOG_URL + "/import", 'GET');
+export async function updateTask(task) {
+    return makeRequest(TASKS, 'PUT', task, false);
 }
 
-export async function getFileFromServer(key) {
-    return makeRequest(FILE_URL + `/get/${key}`, 'GET');
+export async function createTask(task) {
+    return makeRequest(TASKS, 'POST', task, false);
+}
+
+export async function getTask(taskId) {
+    return makeRequest(TASKS + `/${taskId}`, 'GET');
+}
+
+export async function deleteTask(taskId) {
+    return makeRequest(TASKS + `/${taskId}`, 'DELETE');
+}
+
+export async function setWorkday(dayStart, dayEnd) {
+    return makeRequest(SCHEDULE + '/workday', 'POST', {dayStart: dayStart, dayEnd: dayEnd}, false);
+}
+
+export async function generateScheduleOnWeek() {
+    return makeRequest(SCHEDULE + '/generate', 'GET');
+}
+
+export async function getSchedule(date) {
+    return makeRequest(SCHEDULE + `/${date}`, 'GET');
 }
