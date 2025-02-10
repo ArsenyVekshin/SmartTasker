@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Box, Typography, Grid, Paper, duration } from "@mui/material";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { getSchedule } from "../../service/Service";
+import { getMeeting, getSchedule, getTask } from "../../service/Service";
 dayjs.extend(utc);
 
 const timeSlots = Array.from({ length: 14 * 2 }, (_, i) => 8 * 60 + i * 30);
@@ -42,14 +42,23 @@ const WeeklyCalendar = () => {
         .then(schedule=>{
             let events = schedule.reduce((sum, a)=>sum.concat(a));
             events = events.map(ev=>{ev.start += 'Z'; ev.finish += 'Z'; return ev;});
-            setEvents(events);
-            const grouped = events.reduce((acc, event) => {
-                const day = dayjs.utc(event.start).day();
-                if (!acc[day]) acc[day] = [];
-                acc[day].push(event);
-                return acc;
-            }, {});
-            setGroupedEvents(grouped);
+            Promise.all(events.map(ev=>{
+                if(ev.taskId != null)
+                    return getTask(ev.taskId).then(task=>({...ev, name: task.name}));
+                else if(ev.meetingId != null)
+                    return getMeeting(ev.meetingId).then(meeting=>({...ev, name: meeting.name}));
+                else
+                    return new Promise((f,r)=>f({...ev, name: 'Чилл'}));
+                })).then(events=>{
+                    setEvents(events);
+                    const grouped = events.reduce((acc, event) => {
+                        const day = dayjs.utc(event.start).day();
+                        if (!acc[day]) acc[day] = [];
+                        acc[day].push(event);
+                        return acc;
+                    }, {});
+                    setGroupedEvents(grouped);
+                }).catch(e=>console.log(e))
         })
         .catch((e)=>console.log(e));
     }, []);
@@ -89,7 +98,7 @@ const WeeklyCalendar = () => {
                                             borderRadius: "4px",
                                         }}
                                     >
-                                        {event.owner}
+                                        {event.name}
                                     </Paper>
                                 );
                             })}
