@@ -7,6 +7,7 @@ const USER_URL = API_URL + '/user';
 const MEETINGS = API_URL + '/api/meetings';
 const KANBAN = API_URL + '/api/kanban';
 const BOARDS = KANBAN + '/boards';
+const PLACE = API_URL + '/api/place';
 const TASKS = KANBAN + '/tasks';
 const SCHEDULE = API_URL + '/api/schedule';
 
@@ -41,7 +42,12 @@ async function makeRequest(url, method, body = null, fileFlag = null) {
     }
 
     try {
-        const data = await response.json();
+        let data;
+        try {
+            data = await response.json();
+        } catch (error) {
+            data = null;
+        }
         if (!response.ok) {
             showError(`Server returned an error ${response.status}`, data.message);
             throw new Error(`Error: ${response.status} ${data.message}`);
@@ -90,8 +96,12 @@ export async function meeting_find_place(id) {
     return makeRequest(MEETINGS + `/${id}/find-place`, 'POST');
 }
 
-export async function createMetting(id) {
-    return makeRequest(MEETINGS + `/${id}`, 'DELETE');
+export async function createMeeting(meeting) {
+    return makeRequest(MEETINGS + '/new', 'POST', meeting, false);
+}
+
+export async function getMeetings() {
+    return makeRequest(MEETINGS + '/list', 'GET');
 }
 
 export async function updateBoard(board) {
@@ -120,6 +130,22 @@ export async function getOwnedBoards() {
 
 export async function getMyTasksOnBoards() {
     return makeRequest(BOARDS + "/my", 'GET');
+}
+
+export async function updatePlace(place) {
+    return makeRequest(PLACE, 'PUT', place, false);
+}
+
+export async function createPlace(place) {
+    return makeRequest(PLACE, 'POST', place, false);
+}
+
+export async function getPlaces() {
+    return makeRequest(PLACE + '/list', 'GET');
+}
+
+export async function deletePlace(placeId) {
+    return makeRequest(PLACE + `/${placeId}`, 'DELETE');
 }
 
 export async function updateTask(task) {
