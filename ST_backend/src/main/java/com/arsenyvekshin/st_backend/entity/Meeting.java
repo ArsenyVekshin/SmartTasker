@@ -12,7 +12,7 @@ import java.util.Set;
 
 @Data
 @Entity(name = "Meeting")
-public class Meeting implements AllocatableObject, Cloneable{
+public class Meeting implements AllocatableObject, OwnedObject, Cloneable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

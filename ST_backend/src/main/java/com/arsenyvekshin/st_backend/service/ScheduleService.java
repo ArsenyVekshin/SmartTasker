@@ -1,6 +1,7 @@
 package com.arsenyvekshin.st_backend.service;
 
 
+import com.arsenyvekshin.st_backend.dto.TaskDto;
 import com.arsenyvekshin.st_backend.dto.TimeIntervalDto;
 import com.arsenyvekshin.st_backend.entity.*;
 import lombok.RequiredArgsConstructor;
@@ -29,11 +30,11 @@ public class ScheduleService {
         return timeIntervalService.getUserIntervalsBetween(date.atStartOfDay(), date.atTime(23, 59));
     }
 
-    // Запланировать рабочие дни на месяц
+    // Запланировать рабочие дни на неделю
     public void initWorkday(LocalTime dayStart, LocalTime dayEnd) {
         LocalDateTime begin = LocalDateTime.of(LocalDate.now(), dayStart);
         LocalDateTime end = LocalDateTime.of(LocalDate.now(), dayEnd);
-        LocalDateTime monthEnd = LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59)).plusMonths(1);
+        LocalDateTime monthEnd = LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59)).plusDays(7);
         while(begin.isBefore(monthEnd)) {
             timeIntervalService.addFreeInterval(begin, end);
             begin = begin.plusDays(1);
@@ -41,6 +42,22 @@ public class ScheduleService {
         }
     }
 
+
+    public void allocateTask(Long id, boolean isStable) {
+        Task task = taskService.find(id);
+        System.out.println(task.getDuration().toMinutes());
+        userService.checkOwnership(task);
+        if (isStable) timeIntervalService.allocateIntoScheduleStable(task);
+        else timeIntervalService.allocateIntoSchedule(task);
+    }
+
+    public void allocateMeeting(Long id) {
+        Meeting meeting = meetingService.find(id);
+        userService.checkOwnership(meeting);
+        timeIntervalService.allocateIntoSchedule(meeting);
+    }
+
+    /*
     public void generateSchedule(LocalDate startDate, LocalDate endDate) {
 
         User user = userService.getCurrentUser();
@@ -60,5 +77,6 @@ public class ScheduleService {
         }
 
     }
+*/
 
 }

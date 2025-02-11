@@ -54,7 +54,7 @@ public class TimeIntervalService {
         timeIntervalRepository.save(current);
     }
 
-    private void splitIntervalInDuration(TimeInterval interval, Duration duration) {
+    private TimeInterval splitIntervalInDuration(TimeInterval interval, Duration duration) {
         if (interval.isLocked()) throw new IllegalArgumentException("Разделение невозможно: интервал заблокирован");
         if (interval.getDuration().compareTo(duration) <= 0)
             throw new IllegalArgumentException("Разделение невозможно: интервал меньше необходимой длины");
@@ -65,16 +65,43 @@ public class TimeIntervalService {
 
         timeIntervalRepository.save(interval);
         timeIntervalRepository.save(second);
+        return second;
     }
 
     @Transactional
-    public void allocateIntoSchedule(AllocatableObject placeholder) {
+    public void allocateIntoScheduleStable(AllocatableObject placeholder) {
         User user = userService.getCurrentUser();
+        List<TimeInterval> intervals = timeIntervalRepository.findAllAvailableBetweenTimesForUser(user, LocalDateTime.now(), placeholder.getFinish());
+
+        boolean isAllocated = false;
+        for (TimeInterval current : intervals) {
+            if (current.isLocked()) continue;
+            if (current.isCapableForStable(placeholder)) {
+                TimeInterval buff = splitIntervalInDuration(current, Duration.between(placeholder.getStart(), current.getStart()));
+                splitIntervalInDuration(buff, placeholder.getDuration());
+                buff.occupyBy(placeholder);
+                timeIntervalRepository.save(buff);
+                isAllocated = true;
+            }
+            if(isAllocated) break;
+        }
+        if(!isAllocated)
+            throw new IllegalArgumentException("У вас нет свободных интервалов, чтобы поместить эту задачу на конкретное место в расписании.");
+    }
+
+
+
+    @Transactional
+    public void allocateIntoSchedule(AllocatableObject placeholder) {
+        if(placeholder.getFinish().isBefore(LocalDateTime.now()))
+            throw new IllegalArgumentException("Дедлайн задачи уже прошел");
+        User user = userService.getCurrentUser();
+
         List<TimeInterval> intervals = timeIntervalRepository.findAllAvailableBetweenTimesForUser(user, LocalDateTime.now(), placeholder.getFinish());
 
         Duration nonAllocated = placeholder.getDuration();
         for (TimeInterval current : intervals) {
-            if (current.isLocked()) continue;
+            if (!current.isCapableFor(placeholder)) continue;
             if (current.getDuration().compareTo(nonAllocated) <= 0) {
                 current.occupyBy(placeholder);
                 nonAllocated = nonAllocated.minus(current.getDuration());

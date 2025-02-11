@@ -79,20 +79,18 @@ public class TimeInterval implements OwnedObject {
         else throw new IllegalArgumentException("Данный клас не может резервировать временные слоты");
     }
 
-    public boolean isCapableFor(Meeting meeting) {
+
+    public boolean isCapableFor(AllocatableObject placeholder) {
         return  !this.locked
-                && this.meeting != null
-                && this.task != null
-                && this.start.isBefore(meeting.getStart())
-                && this.finish.isAfter(meeting.getFinish());
+                && this.meeting == null
+                && this.task == null;
     }
 
-    public boolean isCapableFor(Task task) {
+    public boolean isCapableForStable(AllocatableObject placeholder) {
         return  !this.locked
-                && this.meeting != null
-                && this.task != null
-                && this.start.isBefore(task.getStart())
-                && this.finish.isAfter(task.getFinish());
+                && this.meeting == null
+                && this.task == null
+                && this.start.isBefore(placeholder.getStart())
+                && this.finish.isAfter(placeholder.getFinish());
     }
-
 }

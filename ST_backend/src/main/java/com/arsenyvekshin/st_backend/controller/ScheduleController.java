@@ -28,14 +28,27 @@ public class ScheduleController {
     public List<TimeIntervalDto> getScheduleForDay(
             @PathVariable("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return scheduleService.getScheduleForDay(date);
+
     }
 
-    @Operation(summary = "Создать слоты рабочего дня на месяц вперед")
+    @Operation(summary = "Создать слоты рабочего дня на неделю вперед")
     @PostMapping("/workday")
     public void initWorkday(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime dayStart,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime dayEnd) {
         scheduleService.initWorkday(dayStart, dayEnd);
+    }
+
+    @Operation(summary = "Поместить задачу в расписание пользователя")
+    @PostMapping("/task/allocate")
+    public void allocateTask (@RequestParam Long id, @RequestParam boolean stable) {
+        scheduleService.allocateTask(id, stable);
+    }
+
+    @Operation(summary = "Поместить встречу в расписание пользователя")
+    @PostMapping("/meeting/allocate")
+    public void allocateMeeting (@RequestParam Long id) {
+        scheduleService.allocateMeeting(id);
     }
 
     @Operation(summary = "Сформировать расписание на ближайшую неделю")
@@ -49,8 +62,5 @@ public class ScheduleController {
     public MessageInfoDto error(Exception ex) {
         return new MessageInfoDto(ex.getMessage());
     }
-
-
-
 
 }

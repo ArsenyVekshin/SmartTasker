@@ -80,7 +80,14 @@ public class TaskService {
             }
         }
 
-        task.setOwner(userService.getCurrentUser());
+        if (dto.getOwner() != null) {
+            User user = userService.getByUsername(dto.getOwner());
+            if(user == null) task.setOwner(userService.getCurrentUser());
+            else task.setOwner(user);
+        } else {
+            task.setOwner(userService.getCurrentUser());
+        }
+
 
         return task;
     }
