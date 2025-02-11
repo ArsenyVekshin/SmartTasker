@@ -36,7 +36,7 @@ const TaskDialog = ({ task, onClose, onUpdate, onCancel }) => {
                 {/* Status Field as Select */}
                 <FormControl fullWidth margin="dense">
                     <InputLabel>Status</InputLabel>
-                    <Select value={task.status} label="Status" onChange={(e) => { task.status = e.target.value; onUpdate(task); }} >
+                    <Select value={task.status} label="Status" onChange={(e) => { task.status = e.target.value; onUpdate(task); }} disabled={isStatusLocked}>
                         <MenuItem value="FREE">FREE</MenuItem>
                         <MenuItem value="OCCUPIED">OCCUPIED</MenuItem>
                         <MenuItem value="FINISHED">FINISHED</MenuItem>

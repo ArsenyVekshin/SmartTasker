@@ -10,4 +10,5 @@ public interface AllocatableObject {
 
     LocalDateTime getFinish();
     String getName();
+    Duration getRepeatPeriod();
 }

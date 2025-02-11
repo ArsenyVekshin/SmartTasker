@@ -19,7 +19,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 dayjs.extend(utc);
 
 const timeSlots = Array.from({ length: 14 * 2 }, (_, i) => 8 * 60 + i * 30);
-const days = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+const days = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
 
 function getWeekDays(baseDate, offsetWeeks = 0) {
     const inputDate = new Date(baseDate);
@@ -44,6 +44,7 @@ const WeeklyCalendar = () => {
     const [endTime, setEndTime] = useState("");
 
     const handleOpenDialog = () => {
+        console.log("ferfferferf");
         setOpenDialog(true);
     };
 

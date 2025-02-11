@@ -37,7 +37,7 @@ public class ScheduleService {
         LocalDateTime scheduleStart = timeIntervalService.getUserScheduleEnd().plusDays(1);
         LocalDateTime begin = LocalDateTime.of(LocalDate.from(scheduleStart), dayStart);
         LocalDateTime end = LocalDateTime.of(LocalDate.from(scheduleStart), dayEnd);
-        LocalDateTime monthEnd = LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59)).plusDays(7);
+        LocalDateTime monthEnd = LocalDateTime.of(LocalDate.from(scheduleStart), LocalTime.of(23, 59)).plusDays(7);
         while(begin.isBefore(monthEnd)) {
             if(begin.getDayOfWeek()!= DayOfWeek.SATURDAY && begin.getDayOfWeek()!= DayOfWeek.SUNDAY) {
                 timeIntervalService.addFreeInterval(begin, end);
@@ -59,7 +59,7 @@ public class ScheduleService {
     public void allocateMeeting(Long id) {
         Meeting meeting = meetingService.find(id);
         userService.checkOwnership(meeting);
-        timeIntervalService.allocateIntoSchedule(meeting);
+        timeIntervalService.allocateIntoScheduleStable(meeting);
     }
 
     @Transactional

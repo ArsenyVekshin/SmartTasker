@@ -6,13 +6,13 @@ import com.arsenyvekshin.st_backend.entity.AllocatableObject;
 import com.arsenyvekshin.st_backend.entity.Task;
 import com.arsenyvekshin.st_backend.entity.TimeInterval;
 import com.arsenyvekshin.st_backend.entity.User;
-import com.arsenyvekshin.st_backend.repository.TaskRepository;
 import com.arsenyvekshin.st_backend.repository.TimeIntervalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -76,18 +76,56 @@ public class TimeIntervalService {
         return second;
     }
 
+
+    @Transactional
+    public void allocateIntoScheduleStableRepeatable(AllocatableObject placeholder) {
+        User user = userService.getCurrentUser();
+        List<TimeInterval> intervals = timeIntervalRepository.findAllAvailableBetweenTimesForUser(user, placeholder.getStart().minusDays(1), getUserScheduleEnd());
+
+        boolean isAllocated = false;
+        Task moved = new Task();
+        moved.setStart(placeholder.getStart());
+        moved.setFinish(placeholder.getFinish());
+        moved.setDuration(placeholder.getDuration());
+
+        for (TimeInterval current : intervals) {
+            if (current.isLocked()) continue;
+            while(moved.getStart().isBefore(current.getStart())){
+                moved.setStart(moved.getStart().plus(placeholder.getRepeatPeriod()));
+                moved.setFinish(moved.getFinish().plus(placeholder.getRepeatPeriod()));
+            }
+            if (current.isCapableForStable(moved)) {
+                TimeInterval buff = splitIntervalInDuration(current, Duration.between(current.getStart(), moved.getStart()));
+                splitIntervalInDuration(buff, moved.getDuration());
+                buff.occupyBy(placeholder);
+                timeIntervalRepository.save(buff);
+                isAllocated = true;
+            }
+
+
+        }
+        if(!isAllocated)
+            throw new IllegalArgumentException("У вас нет свободных интервалов, чтобы поместить " + placeholder.getName() + " на конкретное место в расписании.");
+        if(placeholder.getClass() == Task.class) taskService.planTask((Task) placeholder);
+    }
+
     @Transactional
     public void allocateIntoScheduleStable(AllocatableObject placeholder) {
         if(placeholder.getFinish().isBefore(LocalDateTime.now()))
             throw new IllegalArgumentException("Дедлайн " + placeholder.getName() + " уже прошел");
+        if(!placeholder.getRepeatPeriod().isZero()) {
+            allocateIntoScheduleStableRepeatable(placeholder);
+            return;
+        }
+
         User user = userService.getCurrentUser();
-        List<TimeInterval> intervals = timeIntervalRepository.findAllAvailableBetweenTimesForUser(user, LocalDateTime.now(), placeholder.getFinish());
+        List<TimeInterval> intervals = timeIntervalRepository.findAllAvailableBetweenTimesForUser(user, LocalDateTime.now(), placeholder.getFinish().plusDays(1));
 
         boolean isAllocated = false;
         for (TimeInterval current : intervals) {
             if (current.isLocked()) continue;
             if (current.isCapableForStable(placeholder)) {
-                TimeInterval buff = splitIntervalInDuration(current, Duration.between(placeholder.getStart(), current.getStart()));
+                TimeInterval buff = splitIntervalInDuration(current, Duration.between(current.getStart(), placeholder.getStart()));
                 splitIntervalInDuration(buff, placeholder.getDuration());
                 buff.occupyBy(placeholder);
                 timeIntervalRepository.save(buff);
@@ -96,7 +134,7 @@ public class TimeIntervalService {
             if(isAllocated) break;
         }
         if(!isAllocated)
-            throw new IllegalArgumentException("У вас нет свободных интервалов, чтобы поместить " + placeholder.getName() + "на конкретное место в расписании.");
+            throw new IllegalArgumentException("У вас нет свободных интервалов, чтобы поместить " + placeholder.getName() + " на конкретное место в расписании.");
         if(placeholder.getClass() == Task.class) taskService.planTask((Task) placeholder);
     }
 

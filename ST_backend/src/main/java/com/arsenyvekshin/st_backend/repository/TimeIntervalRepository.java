@@ -41,6 +41,6 @@ public interface TimeIntervalRepository extends JpaRepository<TimeInterval, Long
     @Query("SELECT t FROM time_interval t WHERE t.owner = :user AND t.start BETWEEN :start AND :endTime")
     List<TimeInterval> findAllBetweenTimesForUser(@Param("user") User user, @Param("start") LocalDateTime start, @Param("endTime") LocalDateTime endTime);
 
-    @Query("SELECT ti FROM time_interval ti WHERE ti.owner = :user ORDER BY ti.finish DESC")
+    @Query("SELECT ti FROM time_interval ti WHERE ti.owner = :user ORDER BY ti.finish DESC LIMIT 1")
     Optional<TimeInterval> findMaxFinishByUserId(User user);
 }
