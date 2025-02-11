@@ -33,7 +33,6 @@ const TaskStatusChip = ({ task }) => {
         />
     );
 };
-
 const TaskCard = ({ task, provided, onClick, onDeleteClick, onUpdate, onChange, onCancel }) => {
     const [openDialog, setOpenDialog] = useState(false);
 
@@ -48,12 +47,6 @@ const TaskCard = ({ task, provided, onClick, onDeleteClick, onUpdate, onChange, 
     };
 
     const handleDelete = onDeleteClick;
-
-    // Обработка клика на кнопку выбора
-    const handleButtonClick = (event) => {
-        event.stopPropagation(); // предотвращаем закрытие диалога при клике на кнопку
-        console.log("Выбрана задача: " + task.name);
-    };
 
     // Обработка клика на карточку, чтобы не открывался диалог
     const handleCardClick = (event) => {
@@ -81,25 +74,13 @@ const TaskCard = ({ task, provided, onClick, onDeleteClick, onUpdate, onChange, 
                     <Chip label={`Owner: ${task.owner}`} size="small" style={{ marginTop: 5, marginLeft: 5 }} />
                 </CardContent>
 
-                {/* Кнопка выбора (галочка) */}
-                <IconButton
-                    onClick={handleButtonClick}
-                    style={{
-                        position: "absolute",
-                        top: 8,
-                        right: 8,
-                    }}
-                >
-                    <CheckIcon />
-                </IconButton>
-
                 {/* Кнопка изменения */}
                 <IconButton
                     onClick={handleDialogOpen}
                     style={{
                         position: "absolute",
                         top: 8,
-                        right: 40, // немного отодвигаем кнопку от галочки
+                        right: 8, // немного отодвигаем кнопку от галочки
                     }}
                 >
                     <EditIcon />
@@ -109,7 +90,7 @@ const TaskCard = ({ task, provided, onClick, onDeleteClick, onUpdate, onChange, 
                     style={{
                         position: "absolute",
                         top: 8,
-                        right: 72,
+                        right: 40,
                     }}
                 >
                     <DeleteIcon />
@@ -122,3 +103,4 @@ const TaskCard = ({ task, provided, onClick, onDeleteClick, onUpdate, onChange, 
     );
 };
 export default TaskCard;
+

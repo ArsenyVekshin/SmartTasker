@@ -52,17 +52,23 @@ const KanbanBoard = () => {
 
     const onDragEnd = (result) => {
         if (!result.destination) return;
-
         const { source, destination, draggableId } = result;
         if (source.droppableId === destination.droppableId) return;
+        const updatedTask = tasks.find((task) => task.id.toString() === draggableId);
+
+        if (!updatedTask) return;
+
+        const newTask = {
+            ...updatedTask,
+            board: { id: parseInt(destination.droppableId, 10) },
+        };
 
         setTasks((prevTasks) =>
             prevTasks.map((task) =>
-                task.id.toString() === draggableId
-                    ? { ...task, board: { id: parseInt(destination.droppableId, 10) } }
-                    : task
+                task.id.toString() === draggableId ? newTask : task
             )
         );
+        updateTask(newTask)
     };
 
     const handleCreateTask = (boardId) => {
