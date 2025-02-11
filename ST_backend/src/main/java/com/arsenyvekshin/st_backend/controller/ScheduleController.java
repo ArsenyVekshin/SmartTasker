@@ -51,11 +51,12 @@ public class ScheduleController {
         scheduleService.allocateMeeting(id);
     }
 
-    @Operation(summary = "Сформировать расписание на ближайшую неделю")
-    @PostMapping("/generate")
-    public void createScheduleForWeek() {
-
+    @Operation(summary = "Сформировать расписание из выбранных задач (status=\"OCCUPIED\")")
+    @PostMapping("task/chosen/generate")
+    public void allocateChosenTasks () {
+        scheduleService.allocateChosenTasks();
     }
+
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)

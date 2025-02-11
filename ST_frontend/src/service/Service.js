@@ -168,10 +168,14 @@ export async function setWorkday(dayStart, dayEnd) {
     return makeRequest(SCHEDULE + '/workday', 'POST', {dayStart: dayStart, dayEnd: dayEnd}, false);
 }
 
-export async function generateScheduleOnWeek() {
-    return makeRequest(SCHEDULE + '/generate', 'GET');
+export async function allocateOccupiedTasks() {
+    return makeRequest(SCHEDULE + '/task/chosen/generate', 'POST');
 }
 
 export async function getSchedule(date) {
     return makeRequest(SCHEDULE + `/${date}`, 'GET');
+}
+
+export async function initWorkday(start, end) {
+    return makeRequest(SCHEDULE +"/workday?" + `dayStart=${start}:00` + `&dayEnd=${end}:00`, 'POST');
 }

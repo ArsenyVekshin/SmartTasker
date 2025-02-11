@@ -4,6 +4,7 @@ import com.arsenyvekshin.st_backend.dto.MeetingDto;
 import com.arsenyvekshin.st_backend.dto.MessageInfoDto;
 import com.arsenyvekshin.st_backend.dto.PlaceDto;
 import com.arsenyvekshin.st_backend.dto.TaskDto;
+import com.arsenyvekshin.st_backend.entity.Meeting;
 import com.arsenyvekshin.st_backend.service.MeetingService;
 import com.arsenyvekshin.st_backend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +23,12 @@ import java.util.List;
 @Tag(name = "Управление встречами", description = "Методы для управления встречами")
 public class MeetingController {
     private final MeetingService meetingService;
+
+    @Operation(summary = "Получить список всех помещений")
+    @GetMapping("/list")
+    public List<MeetingDto> getMeetingsList() {
+        return meetingService.getAllUserMeetings();
+    }
 
     @Operation(summary = "Запрос встречи по id")
     @GetMapping("/{id}")

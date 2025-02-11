@@ -6,8 +6,10 @@ import com.arsenyvekshin.st_backend.dto.TimeIntervalDto;
 import com.arsenyvekshin.st_backend.entity.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -32,11 +34,14 @@ public class ScheduleService {
 
     // Запланировать рабочие дни на неделю
     public void initWorkday(LocalTime dayStart, LocalTime dayEnd) {
-        LocalDateTime begin = LocalDateTime.of(LocalDate.now(), dayStart);
-        LocalDateTime end = LocalDateTime.of(LocalDate.now(), dayEnd);
+        LocalDateTime scheduleStart = timeIntervalService.getUserScheduleEnd().plusDays(1);
+        LocalDateTime begin = LocalDateTime.of(LocalDate.from(scheduleStart), dayStart);
+        LocalDateTime end = LocalDateTime.of(LocalDate.from(scheduleStart), dayEnd);
         LocalDateTime monthEnd = LocalDateTime.of(LocalDate.now(), LocalTime.of(23, 59)).plusDays(7);
         while(begin.isBefore(monthEnd)) {
-            timeIntervalService.addFreeInterval(begin, end);
+            if(begin.getDayOfWeek()!= DayOfWeek.SATURDAY && begin.getDayOfWeek()!= DayOfWeek.SUNDAY) {
+                timeIntervalService.addFreeInterval(begin, end);
+            }
             begin = begin.plusDays(1);
             end = end.plusDays(1);
         }
@@ -55,6 +60,14 @@ public class ScheduleService {
         Meeting meeting = meetingService.find(id);
         userService.checkOwnership(meeting);
         timeIntervalService.allocateIntoSchedule(meeting);
+    }
+
+    @Transactional
+    public void allocateChosenTasks() {
+        List<Task> tasks = taskService.getUserTasks();
+        for(Task task : tasks){
+            timeIntervalService.allocateIntoSchedule(task);
+        }
     }
 
     /*

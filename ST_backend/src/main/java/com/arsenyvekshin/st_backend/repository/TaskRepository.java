@@ -60,6 +60,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     @Query("SELECT t FROM Task t WHERE t.board.id = :boardId AND t.status = :status")
     List<Task> findByBoardIdAndStatus(Long boardId, TaskStatus status);
 
-    @Query("select t from Task t where  t.owner = :user and t.status=0 order by t.finish")
+    @Query("select t from Task t where  t.owner = :user and t.status=1 order by t.finish")
     List<Task> findTasksToEmplace(User user);
 }

@@ -9,4 +9,5 @@ public interface AllocatableObject {
     LocalDateTime getStart();
 
     LocalDateTime getFinish();
+    String getName();
 }

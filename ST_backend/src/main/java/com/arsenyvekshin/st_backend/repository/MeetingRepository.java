@@ -2,6 +2,7 @@ package com.arsenyvekshin.st_backend.repository;
 
 import com.arsenyvekshin.st_backend.entity.Meeting;
 import com.arsenyvekshin.st_backend.entity.Place;
+import com.arsenyvekshin.st_backend.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -26,6 +27,8 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
 
     // Метод для поиска встреч по месту
     List<Meeting> findByPlaceId(Long placeId);
+
+    List<Meeting> findByOwner(User owner);
 
     // Метод для поиска встреч по участникам (по пользователю)
     List<Meeting> findByMembersId(Long userId);

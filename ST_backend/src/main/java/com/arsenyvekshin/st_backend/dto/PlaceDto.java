@@ -19,6 +19,9 @@ public class PlaceDto {
     @JsonProperty
     private String name;
 
+    @JsonProperty
+    private String address = "";
+
     @NotBlank(message = "Вместимость не может быть пустым")
     @JsonProperty
     private int capacity;
@@ -31,5 +34,6 @@ public class PlaceDto {
         this.name = obj.getName();
         this.capacity = obj.getCapacity();
         this.available = obj.isAvailable();
+        this.address = obj.getAddress();
     }
 }

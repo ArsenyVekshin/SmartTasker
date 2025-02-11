@@ -47,4 +47,8 @@ public class PlaceService {
         return placeRepository.findByAvailableTrueAndCapacityGreaterThanEqual(membersNum);
     }
 
+    public List<PlaceDto> getAllPlaces() {
+        return placeRepository.findAll().stream().map(PlaceDto::new).toList();
+    }
+
 }

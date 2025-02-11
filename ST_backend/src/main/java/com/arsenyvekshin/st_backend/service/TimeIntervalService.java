@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -27,6 +28,13 @@ public class TimeIntervalService {
     private final TaskService taskService;
     private final UserService userService;
 
+
+    public LocalDateTime getUserScheduleEnd() {
+        User user = userService.getCurrentUser();
+        Optional<TimeInterval> last = timeIntervalRepository.findMaxFinishByUserId(user);
+        if (last.isPresent()) return last.get().getFinish();
+        else return LocalDateTime.now();
+    }
 
     public List<TimeIntervalDto> getUserIntervalsBetween(LocalDateTime start, LocalDateTime end) {
         User user = userService.getCurrentUser();
@@ -70,6 +78,8 @@ public class TimeIntervalService {
 
     @Transactional
     public void allocateIntoScheduleStable(AllocatableObject placeholder) {
+        if(placeholder.getFinish().isBefore(LocalDateTime.now()))
+            throw new IllegalArgumentException("Дедлайн " + placeholder.getName() + " уже прошел");
         User user = userService.getCurrentUser();
         List<TimeInterval> intervals = timeIntervalRepository.findAllAvailableBetweenTimesForUser(user, LocalDateTime.now(), placeholder.getFinish());
 
@@ -86,7 +96,8 @@ public class TimeIntervalService {
             if(isAllocated) break;
         }
         if(!isAllocated)
-            throw new IllegalArgumentException("У вас нет свободных интервалов, чтобы поместить эту задачу на конкретное место в расписании.");
+            throw new IllegalArgumentException("У вас нет свободных интервалов, чтобы поместить " + placeholder.getName() + "на конкретное место в расписании.");
+        if(placeholder.getClass() == Task.class) taskService.planTask((Task) placeholder);
     }
 
 
@@ -94,7 +105,7 @@ public class TimeIntervalService {
     @Transactional
     public void allocateIntoSchedule(AllocatableObject placeholder) {
         if(placeholder.getFinish().isBefore(LocalDateTime.now()))
-            throw new IllegalArgumentException("Дедлайн задачи уже прошел");
+            throw new IllegalArgumentException("Дедлайн " + placeholder.getName() + " уже прошел");
         User user = userService.getCurrentUser();
 
         List<TimeInterval> intervals = timeIntervalRepository.findAllAvailableBetweenTimesForUser(user, LocalDateTime.now(), placeholder.getFinish());
@@ -115,9 +126,9 @@ public class TimeIntervalService {
             if (nonAllocated.isZero()) break;
         }
         if (!nonAllocated.isZero())
-            throw new IllegalArgumentException("У вас недостаточно свободных интервалов, чтобы выполнить эту задачу.");
+            throw new IllegalArgumentException("У вас недостаточно свободных интервалов, чтобы выполнить " + placeholder.getName());
 
-        if(placeholder.getClass() == Task.class) taskService.occupyTask((Task) placeholder);
+        if(placeholder.getClass() == Task.class) taskService.planTask((Task) placeholder);
     }
 
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TimeIntervalRepository extends JpaRepository<TimeInterval, Long> {
@@ -33,11 +34,13 @@ public interface TimeIntervalRepository extends JpaRepository<TimeInterval, Long
     List<TimeInterval> findAllAfterTimeForUser(@Param("user") User user, @Param("start") LocalDateTime start);
 
     // Все интервалы в промежутке времени, где task = null и meeting = null
-    @Query("SELECT t FROM time_interval t WHERE t.owner = :user AND t.task IS NULL AND t.meeting IS NULL AND t.start BETWEEN :start AND :endTime")
+    @Query("SELECT t FROM time_interval t WHERE t.owner = :user AND t.task IS NULL AND t.meeting IS NULL AND t.start BETWEEN :start AND :endTime ORDER BY t.start")
     List<TimeInterval> findAllAvailableBetweenTimesForUser(@Param("user") User user, @Param("start") LocalDateTime start, @Param("endTime") LocalDateTime endTime);
 
     // Все интервалы в промежутке времени, где task = null и meeting = null
     @Query("SELECT t FROM time_interval t WHERE t.owner = :user AND t.start BETWEEN :start AND :endTime")
     List<TimeInterval> findAllBetweenTimesForUser(@Param("user") User user, @Param("start") LocalDateTime start, @Param("endTime") LocalDateTime endTime);
 
+    @Query("SELECT ti FROM time_interval ti WHERE ti.owner = :user ORDER BY ti.finish DESC")
+    Optional<TimeInterval> findMaxFinishByUserId(User user);
 }

@@ -60,6 +60,12 @@ public class TaskService {
         taskRepository.save(task);
     }
 
+    public void planTask(Task task) {
+        task.setOwner(userService.getCurrentUser());
+        task.setStatus(TaskStatus.INPROGRESS);
+        taskRepository.save(task);
+    }
+
 
     private Task build(Task task, TaskDto dto) {
         task.updateByDto(dto);

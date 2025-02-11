@@ -98,8 +98,15 @@ public class MeetingService {
         return findSuitablePlacesForMeeting(meeting).stream().map(PlaceDto::new).toList();
     }
 
+    public List<MeetingDto> getAllUserMeetings() {
+        User user = userService.getCurrentUser();
+        return getAllUserMeetings(user).stream().map(MeetingDto::new).toList();
+    }
+
     public List<Meeting> getAllUserMeetings(User user) {
-        return meetingRepository.findByMembersId(user.getId());
+        List<Meeting> out =  meetingRepository.findByMembersId(user.getId());
+        out.addAll(meetingRepository.findByOwner(user));
+        return out;
     }
 
 }

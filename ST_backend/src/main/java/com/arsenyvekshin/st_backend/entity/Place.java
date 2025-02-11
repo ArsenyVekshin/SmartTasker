@@ -34,6 +34,7 @@ public class Place {
         this.name = dto.getName();
         this.capacity = dto.getCapacity();
         this.available = dto.isAvailable();
+        this.address = dto.getAddress();
         return this;
     }
 }

@@ -7,14 +7,25 @@ import {
     Button,
     IconButton,
     Menu,
-    MenuItem,
+    MenuItem, Box,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import TaskCard from "./task/TaskCard";
 import TaskDialog from "./task/TaskDialog";
 import BoardDialog from "./board/BoardDialog";
-import { createBoard, deleteBoard, updateBoard, createTask, deleteTask, updateTask, getMyTasksOnBoards, getOwnedBoards, getTask } from '../../service/Service';
+import {
+    createBoard,
+    deleteBoard,
+    updateBoard,
+    createTask,
+    deleteTask,
+    updateTask,
+    getMyTasksOnBoards,
+    getOwnedBoards,
+    getTask,
+    allocateOccupiedTasks
+} from '../../service/Service';
 
 // const initialBoards = [
 //     { id: 1, name: "Board 1", owner: "User A" },
@@ -107,18 +118,31 @@ const KanbanBoard = () => {
         setSelectedBoard(null);
     };
 
+    const handleSchedule = () => {
+        allocateOccupiedTasks().then(importTasks);
+    };
+
+
     return (
         <DragDropContext onDragEnd={onDragEnd}>
             <Container>
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    fullWidth
-                    onClick={handleCreateBoard}
-                    style={{ marginBottom: 20 }}
-                >
-                    Новая доска
-                </Button>
+                <Box display="flex" justifyContent="flex-end" mb={2}>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={handleCreateBoard}
+                        style={{ marginRight: 10 }}
+                    >
+                        Новая доска
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleSchedule}
+                    >
+                        Спланировать расписание
+                    </Button>
+                </Box>
                 <Grid container spacing={2}>
                     {boards.map((board) => (
                         <Grid item xs={12} sm={6} md={4} key={board.id}>
@@ -157,7 +181,7 @@ const KanbanBoard = () => {
                                 </Droppable>
                                 <Button
                                     variant="contained"
-                                    color="primary"
+                                    color="secondary"
                                     fullWidth
                                     onClick={() => handleCreateTask(board.id)}
                                     style={{ marginTop: 10 }}
