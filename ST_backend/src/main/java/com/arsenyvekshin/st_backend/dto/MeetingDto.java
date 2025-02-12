@@ -2,12 +2,15 @@ package com.arsenyvekshin.st_backend.dto;
 
 
 import com.arsenyvekshin.st_backend.entity.Meeting;
+import com.arsenyvekshin.st_backend.entity.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @AllArgsConstructor
 @RequiredArgsConstructor
@@ -48,6 +51,8 @@ public class MeetingDto {
     @JsonProperty
     private String owner;
 
+    private List<String> members = new ArrayList<>();
+
 
     public MeetingDto(Meeting obj) {
         this.id = obj.getId();
@@ -63,6 +68,10 @@ public class MeetingDto {
             this.place = new PlaceDto(obj.getPlace());
         if (obj.getOwner() != null)
             this.owner = obj.getOwner().getUsername();
+
+        if(!obj.getMembers().isEmpty()) {
+            this.members.addAll(obj.getMembers().stream().map(User::getUsername).toList());
+        }
     }
 
 

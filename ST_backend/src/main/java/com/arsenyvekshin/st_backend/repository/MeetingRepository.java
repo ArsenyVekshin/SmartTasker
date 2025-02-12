@@ -43,5 +43,11 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
             "OR (m.start <= :start AND m.finish >= :finish)")
     List<Place> findBusyPlacesByTimeRange(LocalDateTime start, LocalDateTime finish);
 
+
+    // Метод для поиска встреч, где пользователь является либо членом (member), либо владельцем (owner)
+    @Query("SELECT m FROM Meeting m " +
+            "WHERE :user MEMBER OF m.members " +
+            "OR m.owner = :user")
+    List<Meeting> findAllByUserIsMemberOrOwner(User user);
 }
 

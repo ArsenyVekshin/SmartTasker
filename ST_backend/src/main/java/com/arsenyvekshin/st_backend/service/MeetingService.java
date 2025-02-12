@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -72,8 +73,20 @@ public class MeetingService {
             }
         }
 
-        if (dto.getOwner() != null) {
+        if (dto.getOwner() != null && !dto.getOwner().isEmpty()) {
             meeting.setOwner(userService.getByUsername(dto.getOwner()));
+        } else {
+            meeting.setOwner(userService.getCurrentUser());
+        }
+
+        if(dto.getMembers() != null){
+            if(dto.getMembers().isEmpty()) meeting.setMembers(new HashSet<>());
+            else {
+                for(String username: dto.getMembers()){
+                    User user = userService.getByUsername(username);
+                    meeting.addMember(user);
+                }
+            }
         }
 
         return meeting;
@@ -104,9 +117,7 @@ public class MeetingService {
     }
 
     public List<Meeting> getAllUserMeetings(User user) {
-        List<Meeting> out =  meetingRepository.findByMembersId(user.getId());
-        out.addAll(meetingRepository.findByOwner(user));
-        return out;
+        return meetingRepository.findAllByUserIsMemberOrOwner(user);
     }
 
 }
