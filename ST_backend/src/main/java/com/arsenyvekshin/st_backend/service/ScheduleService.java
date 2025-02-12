@@ -63,6 +63,26 @@ public class ScheduleService {
     }
 
     @Transactional
+    public void allocateMeetingFinal(Long id) {
+        Meeting meeting = meetingService.find(id);
+        userService.checkOwnership(meeting);
+        if(meeting.getPlace() == null)
+            throw new IllegalArgumentException("Задача не готова к размещению: выберите место проведения");
+        if(meeting.getMembers().isEmpty())
+            throw new IllegalArgumentException("Задача не готова к размещению: список участников пуст");
+
+        timeIntervalService.allocateIntoScheduleStable(meeting);
+        for(User member: meeting.getMembers()) {
+            try {
+                timeIntervalService.allocateIntoScheduleStable(meeting, member);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Не совместимо с расписанием пользователя " + member.getUsername());
+            }
+        }
+
+    }
+
+    @Transactional
     public void allocateChosenTasks() {
         List<Task> tasks = taskService.getUserTasks();
         for(Task task : tasks){

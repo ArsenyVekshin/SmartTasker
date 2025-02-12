@@ -63,11 +63,14 @@ public class TimeIntervalService {
     }
 
     private TimeInterval splitIntervalInDuration(TimeInterval interval, Duration duration) {
+        return splitIntervalInDuration(interval, duration, userService.getCurrentUser());
+    }
+    private TimeInterval splitIntervalInDuration(TimeInterval interval, Duration duration, User user) {
         if (interval.isLocked()) throw new IllegalArgumentException("Разделение невозможно: интервал заблокирован");
         if (interval.getDuration().compareTo(duration) <= 0)
             throw new IllegalArgumentException("Разделение невозможно: интервал меньше необходимой длины");
 
-        TimeInterval second = new TimeInterval(userService.getCurrentUser(), interval.getStart().plus(duration), interval.getFinish());
+        TimeInterval second = new TimeInterval(user, interval.getStart().plus(duration), interval.getFinish());
         interval.setFinish(interval.getStart().plus(duration));
         interval.setDuration(duration);
 
@@ -76,10 +79,13 @@ public class TimeIntervalService {
         return second;
     }
 
-
     @Transactional
     public void allocateIntoScheduleStableRepeatable(AllocatableObject placeholder) {
-        User user = userService.getCurrentUser();
+        allocateIntoScheduleStableRepeatable(placeholder, userService.getCurrentUser());
+
+    }
+    @Transactional
+    public void allocateIntoScheduleStableRepeatable(AllocatableObject placeholder, User user) {
         List<TimeInterval> intervals = timeIntervalRepository.findAllAvailableBetweenTimesForUser(user, placeholder.getStart().minusDays(1), getUserScheduleEnd());
 
         boolean isAllocated = false;
@@ -111,22 +117,27 @@ public class TimeIntervalService {
 
     @Transactional
     public void allocateIntoScheduleStable(AllocatableObject placeholder) {
+        allocateIntoScheduleStable(placeholder, userService.getCurrentUser());
+    }
+    @Transactional
+    public void allocateIntoScheduleStable(AllocatableObject placeholder, User user) {
         if(placeholder.getFinish().isBefore(LocalDateTime.now()))
             throw new IllegalArgumentException("Дедлайн " + placeholder.getName() + " уже прошел");
         if(!placeholder.getRepeatPeriod().isZero()) {
-            allocateIntoScheduleStableRepeatable(placeholder);
+            allocateIntoScheduleStableRepeatable(placeholder, user);
             return;
         }
 
-        User user = userService.getCurrentUser();
         List<TimeInterval> intervals = timeIntervalRepository.findAllAvailableBetweenTimesForUser(user, LocalDateTime.now(), placeholder.getFinish().plusDays(1));
 
         boolean isAllocated = false;
         for (TimeInterval current : intervals) {
             if (current.isLocked()) continue;
             if (current.isCapableForStable(placeholder)) {
-                TimeInterval buff = splitIntervalInDuration(current, Duration.between(current.getStart(), placeholder.getStart()));
-                splitIntervalInDuration(buff, placeholder.getDuration());
+                TimeInterval buff = splitIntervalInDuration(current, Duration.between(current.getStart(), placeholder.getStart()), user);
+                if(buff.isPossibleToSplit(placeholder.getDuration())) {
+                    splitIntervalInDuration(buff, placeholder.getDuration(), user);
+                }
                 buff.occupyBy(placeholder);
                 timeIntervalRepository.save(buff);
                 isAllocated = true;
@@ -139,12 +150,15 @@ public class TimeIntervalService {
     }
 
 
-
     @Transactional
     public void allocateIntoSchedule(AllocatableObject placeholder) {
+        allocateIntoSchedule(placeholder, userService.getCurrentUser());
+    }
+
+    @Transactional
+    public void allocateIntoSchedule(AllocatableObject placeholder, User user) {
         if(placeholder.getFinish().isBefore(LocalDateTime.now()))
             throw new IllegalArgumentException("Дедлайн " + placeholder.getName() + " уже прошел");
-        User user = userService.getCurrentUser();
 
         List<TimeInterval> intervals = timeIntervalRepository.findAllAvailableBetweenTimesForUser(user, LocalDateTime.now(), placeholder.getFinish());
 

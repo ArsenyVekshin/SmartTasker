@@ -51,6 +51,12 @@ public class ScheduleController {
         scheduleService.allocateMeeting(id);
     }
 
+    @Operation(summary = "Поместить встречу в расписание всех пользователей-участников")
+    @PostMapping("/meeting/allocate/all-members")
+    public void allocateMeetingFORALL (@RequestParam Long id) {
+       scheduleService.allocateMeetingFinal(id);
+    }
+
     @Operation(summary = "Сформировать расписание из выбранных задач (status=\"OCCUPIED\")")
     @PostMapping("task/chosen/generate")
     public void allocateChosenTasks () {

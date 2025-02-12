@@ -45,7 +45,7 @@ public class Meeting implements AllocatableObject, OwnedObject, Cloneable{
     private Keypoint keypoint;
 
     @ManyToOne
-    @JoinColumn(name = "place_id", nullable = false)
+    @JoinColumn(name = "place_id")
     private Place place;
 
     @ManyToMany
@@ -64,8 +64,10 @@ public class Meeting implements AllocatableObject, OwnedObject, Cloneable{
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    @PostPersist
+    @PrePersist
+    @PreUpdate
     protected void onCreate() {
+        if(!this.start.isBefore(this.finish)) throw new IllegalArgumentException("Время начала не может быть позже времени окончания");
         this.duration = Duration.between(this.start, this.finish);
     }
 

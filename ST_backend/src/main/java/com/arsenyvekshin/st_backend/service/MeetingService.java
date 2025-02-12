@@ -80,8 +80,8 @@ public class MeetingService {
         }
 
         if(dto.getMembers() != null){
-            if(dto.getMembers().isEmpty()) meeting.setMembers(new HashSet<>());
-            else {
+            meeting.setMembers(new HashSet<>());
+            if(!dto.getMembers().isEmpty()) {
                 for(String username: dto.getMembers()){
                     User user = userService.getByUsername(username);
                     meeting.addMember(user);

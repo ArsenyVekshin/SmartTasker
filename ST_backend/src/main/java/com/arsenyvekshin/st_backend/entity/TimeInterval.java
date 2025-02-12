@@ -1,6 +1,7 @@
 package com.arsenyvekshin.st_backend.entity;
 
 
+import com.sun.jdi.request.DuplicateRequestException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Max;
@@ -90,7 +91,11 @@ public class TimeInterval implements OwnedObject {
         return  !this.locked
                 && this.meeting == null
                 && this.task == null
-                && this.start.isBefore(placeholder.getStart())
-                && this.finish.isAfter(placeholder.getFinish());
+                && (this.start.isBefore(placeholder.getStart()) || this.start.isEqual(placeholder.getStart()))
+                && (this.finish.isAfter(placeholder.getFinish()) || this.finish.isEqual(placeholder.getFinish())) ;
+    }
+
+    public boolean isPossibleToSplit(Duration part) {
+        return this.duration.minus(part).compareTo(Duration.ofMinutes(10)) > 0;
     }
 }
