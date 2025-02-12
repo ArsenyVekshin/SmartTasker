@@ -179,3 +179,11 @@ export async function getSchedule(date) {
 export async function initWorkday(start, end) {
     return makeRequest(SCHEDULE +"/workday?" + `dayStart=${start}:00` + `&dayEnd=${end}:00`, 'POST');
 }
+
+export async function getUsersList() {
+    return makeRequest(USER_URL +"/list", 'GET');
+}
+
+export async function getSuitablePlaces(id) {
+    return makeRequest(MEETINGS + `/${id}/find-place`, 'POST');
+}

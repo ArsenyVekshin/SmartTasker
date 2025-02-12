@@ -14,27 +14,51 @@ import {
     MenuItem,
     Select,
     FormControl,
-    InputLabel
+    InputLabel, Checkbox, FormControlLabel
 } from "@mui/material";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import AddIcon from "@mui/icons-material/Add";
+import {getSuitablePlaces, getUsersList} from "../../../service/Service";
+import CheckIcon from '@mui/icons-material/Check';
 
-const MeetingDialog = ({ meeting, onClose, onSave }) => {
+const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
     const [editedMeeting, setEditedMeeting] = useState(meeting || {});
     const [userDialogOpen, setUserDialogOpen] = useState(false);
     const [placeDialogOpen, setPlaceDialogOpen] = useState(false);
-    const [users, setUsers] = useState([
-        "User 1", "User 2", "User 3", "User 4", "User 5" // Пример списка пользователей, надо запросить с бэка
-    ]);
-    const [places, setPlaces] = useState([
-        "Room 1", "Room 2", "Room 3", "Online" // Пример списка мест, надо запрсоитьь с бэка
-    ]);
+    const [users, setUsers] = useState([]);
+    const [places, setPlaces] = useState([]);
     const [selectedUsers, setSelectedUsers] = useState(editedMeeting.members || []);
 
+
     useEffect(() => {
-        setEditedMeeting(meeting || {});
+        if(!meeting) return null;
+        if(!meeting.members) meeting.members= [];
+        setEditedMeeting(meeting || {
+            name: "",
+            description: "",
+            duration: 0,
+            begin: "",
+            end: "",
+            repeatPeriod: 0,
+            keypoint: null,
+            place: null,
+            members: [],
+            owner: "", // Обязательное поле
+            isOnline: false});
         setSelectedUsers(editedMeeting.members || []);
+        if(!editedMeeting.place) {
+            setEditedMeeting({...editedMeeting, place: {name: "online", address: "insert link here"}});
+        }
+        fetchUsersList();
     }, [meeting]);
+
+    const fetchUsersList = async () => {
+        setUsers(await getUsersList());
+    };
+
+    const fetchSuitablePlaces = async () => {
+        setPlaces(await getSuitablePlaces(meeting.id));
+    };
 
     const handleChange = (field) => (event) => {
         setEditedMeeting({ ...editedMeeting, [field]: event.target.value });
@@ -48,11 +72,22 @@ const MeetingDialog = ({ meeting, onClose, onSave }) => {
         setPlaceDialogOpen(false);
     };
 
+    const handlePlaceDialogOpen = () => {
+        fetchSuitablePlaces();
+        setPlaceDialogOpen(true);
+
+    };
+
     const handleUserSelect = (user) => {
-        setSelectedUsers([...selectedUsers, user]);
+        setSelectedUsers((prevSelected) =>
+            prevSelected.includes(user)
+                ? prevSelected.filter((u) => u !== user)
+                : [...prevSelected, user]
+        );
     };
 
     const handleSaveUsers = () => {
+        
         setEditedMeeting({ ...editedMeeting, members: selectedUsers });
         setUserDialogOpen(false);
     };
@@ -62,7 +97,7 @@ const MeetingDialog = ({ meeting, onClose, onSave }) => {
         setPlaceDialogOpen(false);
     };
 
-    if (!meeting) return null;
+
 
     return (
         <Dialog open={Boolean(meeting)} onClose={onClose}>
@@ -90,37 +125,43 @@ const MeetingDialog = ({ meeting, onClose, onSave }) => {
                     </Grid>
 
 
-
                     {/* Ключевая точка */}
                     <Grid item xs={12}>
                         <TextField fullWidth label="Ключевая точка" value={editedMeeting.keypoint?.name || "Не указано"} onChange={handleChange("keypoint.name")} />
                     </Grid>
 
                     {/* Участники */}
-                    <Grid item xs={12}>
-                        <Typography variant="h6" style={{ display: "flex", alignItems: "center" }}>
-                            Участники ({editedMeeting.members.length})
-                            <IconButton onClick={() => setUserDialogOpen(true)} style={{ marginLeft: 8 }}>
-                                <AddIcon />
-                            </IconButton>
-                        </Typography>
-                        {editedMeeting.members && (
-                            <List>
-                                {editedMeeting.members.map((member, index) => (
-                                    <ListItem key={index}><AccountCircle sx={{ marginRight: 1 }} />{member}</ListItem>
-                                ))}
-                            </List>
-                        )}
-                    </Grid>
+                    {editedMeeting.members && (
+                        <Grid item xs={12}>
+                            <Typography variant="h6" style={{ display: "flex", alignItems: "center" }}>
+                                Участники ({editedMeeting.members.length})
+                                <IconButton onClick={() => setUserDialogOpen(true)} style={{ marginLeft: 8 }}>
+                                    <AddIcon />
+                                </IconButton>
+                            </Typography>
+                            {editedMeeting.members && (
+                                <List>
+                                    {editedMeeting.members.map((member, index) => (
+                                        <ListItem key={index}><AccountCircle sx={{ marginRight: 1 }} />{member}</ListItem>
+                                    ))}
+                                </List>
+                            )}
+                        </Grid>
+                    )}
+
+
                     {/* Место проведения */}
                     <Grid item xs={12}>
                         <Typography variant="h6" style={{ display: "flex", alignItems: "center" }}>
                             Место проведения: {editedMeeting.place?.name || "Не указано"}
-                            <IconButton onClick={() => setPlaceDialogOpen(true)} style={{ marginLeft: 8 }}>
-                                <AddIcon />
-                            </IconButton>
+                            {editedMeeting.members && editedMeeting.members.length > 0 && (
+                                <IconButton onClick={handlePlaceDialogOpen()} style={{ marginLeft: 8 }}>
+                                    <AddIcon />
+                                </IconButton>
+                            )}
+
                         </Typography>
-                        {editedMeeting.place?.name === "Online" && (
+                        {editedMeeting.place?.name === "online" && (
                             <TextField
                                 fullWidth
                                 label="Ссылка"
@@ -134,7 +175,7 @@ const MeetingDialog = ({ meeting, onClose, onSave }) => {
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Закрыть</Button>
-                <Button onClick={() => onSave(editedMeeting)} variant="contained" color="primary">Сохранить</Button>
+                <Button onClick={() => onUpdate(editedMeeting)} variant="contained" color="primary">Сохранить</Button>
             </DialogActions>
 
             {/* Диалог выбора пользователей */}
@@ -145,6 +186,7 @@ const MeetingDialog = ({ meeting, onClose, onSave }) => {
                         {users.map((user, index) => (
                             <ListItem button key={index} onClick={() => handleUserSelect(user)}>
                                 {user}
+                                {selectedUsers.includes(user) && (<CheckIcon style={{ position: 'absolute', right: 0 }} />)}
                             </ListItem>
                         ))}
                     </List>

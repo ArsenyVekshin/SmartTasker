@@ -18,7 +18,7 @@ public class UserController {
     private final UserService userService;
 
     @Operation(summary = "Получить список пользователей")
-    @PostMapping("/list")
+    @GetMapping("/list")
     public List<String> getUserList() {
         return userService.getUsersList();
     }
