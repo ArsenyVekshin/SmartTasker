@@ -10,6 +10,7 @@ import {
     Typography,
     List,
     ListItem,
+    ListItemButton,
     IconButton,
     MenuItem,
     Select,
@@ -31,7 +32,7 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
 
 
     useEffect(() => {
-        if(!meeting) return null;
+        if(!meeting) return;
         if(!meeting.members) meeting.members= [];
         setEditedMeeting(meeting || {
             name: "",
@@ -45,10 +46,7 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
             members: [],
             owner: "", // Обязательное поле
             isOnline: false});
-        setSelectedUsers(editedMeeting.members || []);
-        if(!editedMeeting.place) {
-            setEditedMeeting({...editedMeeting, place: {name: "online", address: "insert link here"}});
-        }
+        setSelectedUsers(meeting.members || []);
         fetchUsersList();
     }, [meeting]);
 
@@ -100,7 +98,7 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
 
 
     return (
-        <Dialog open={Boolean(meeting)} onClose={onClose}>
+        <Dialog open={meeting!==null} onClose={onClose}>
             <DialogTitle>Редактирование встречи</DialogTitle>
             <DialogContent>
                 <Grid container spacing={2}>
@@ -155,7 +153,7 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
                         <Typography variant="h6" style={{ display: "flex", alignItems: "center" }}>
                             Место проведения: {editedMeeting.place?.name || "Не указано"}
                             {editedMeeting.members && editedMeeting.members.length > 0 && (
-                                <IconButton onClick={handlePlaceDialogOpen()} style={{ marginLeft: 8 }}>
+                                <IconButton onClick={handlePlaceDialogOpen} style={{ marginLeft: 8 }}>
                                     <AddIcon />
                                 </IconButton>
                             )}
@@ -184,10 +182,10 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
                 <DialogContent>
                     <List>
                         {users.map((user, index) => (
-                            <ListItem button key={index} onClick={() => handleUserSelect(user)}>
+                            <ListItemButton key={index} onClick={() => handleUserSelect(user)}>
                                 {user}
                                 {selectedUsers.includes(user) && (<CheckIcon style={{ position: 'absolute', right: 0 }} />)}
-                            </ListItem>
+                            </ListItemButton>
                         ))}
                     </List>
                 </DialogContent>
