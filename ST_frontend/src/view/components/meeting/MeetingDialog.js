@@ -21,6 +21,7 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import AddIcon from "@mui/icons-material/Add";
 import {getSuitablePlaces, getUsersList} from "../../../service/Service";
 import CheckIcon from '@mui/icons-material/Check';
+import { showErrorOnlyText } from "../ErrorMessage";
 
 const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
     const [editedMeeting, setEditedMeeting] = useState(meeting || {});
@@ -30,6 +31,17 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
     const [places, setPlaces] = useState([]);
     const [selectedUsers, setSelectedUsers] = useState(editedMeeting.members || []);
 
+    function getCurrentDateTime(now) {    
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0'); // Месяцы начинаются с 0
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+    
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}`;
+    }
 
     useEffect(() => {
         if(!meeting) return;
@@ -38,8 +50,8 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
             name: "",
             description: "",
             duration: 0,
-            begin: "",
-            end: "",
+            begin: getCurrentDateTime(new Date()),
+            end: getCurrentDateTime(new Date(Date.now()+3600000)),
             repeatPeriod: 0,
             keypoint: null,
             place: null,
@@ -55,7 +67,10 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
     };
 
     const fetchSuitablePlaces = async () => {
-        setPlaces(await getSuitablePlaces(meeting.id));
+        if (meeting.id)
+            setPlaces(await getSuitablePlaces(meeting.id));
+        else
+            setPlaces([{name: 'Сохраните встречу перед поиском свободного помещения'}])
     };
 
     const handleChange = (field) => (event) => {
@@ -95,7 +110,19 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
         setPlaceDialogOpen(false);
     };
 
-
+    function checkBeforeUpdate() {
+        if (new Date(editedMeeting.begin) >= new Date(editedMeeting.end))
+            showErrorOnlyText('Время конца должно быть позднее времени начала');
+        else if (editedMeeting.name === '')
+            showErrorOnlyText('Встреча должна иметь название');
+        else if (editedMeeting.members.length == 0)
+            showErrorOnlyText('Должен быть хотя бы один участник');
+        else {
+            if(editedMeeting.place.name==='Сохраните встречу перед поиском свободного помещения')
+                editedMeeting.place = null;
+            onUpdate(editedMeeting);
+        }
+    }
 
     return (
         <Dialog open={meeting!==null} onClose={onClose}>
@@ -173,7 +200,7 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Закрыть</Button>
-                <Button onClick={() => onUpdate(editedMeeting)} variant="contained" color="primary">Сохранить</Button>
+                <Button onClick={() => checkBeforeUpdate()} variant="contained" color="primary">Сохранить</Button>
             </DialogActions>
 
             {/* Диалог выбора пользователей */}
@@ -206,7 +233,7 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
                             onChange={(event) => handleSavePlace(event.target.value)}
                         >
                             {places.map((place, index) => (
-                                <MenuItem key={index} value={place}>{place}</MenuItem>
+                                <MenuItem key={index} value={place.name}>{place.name}</MenuItem>
                             ))}
                         </Select>
                     </FormControl>

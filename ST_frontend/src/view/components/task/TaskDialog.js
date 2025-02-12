@@ -12,6 +12,7 @@ import {
     InputLabel,
     FormControl,
 } from "@mui/material";
+import { showErrorOnlyText } from "../ErrorMessage";
 
 const TaskDialog = ({ task, onClose, onUpdate, onCancel }) => {
     if (!task) return null;
@@ -25,11 +26,26 @@ const TaskDialog = ({ task, onClose, onUpdate, onCancel }) => {
     // Check if the task is "INPROGRESS" or "OCCUPIED"
     const isStatusLocked = task.status === "INPROGRESS" || task.status === "OCCUPIED";
 
+    function isNum(str) {
+        return (new RegExp(/^\d*$/).test(str)) && (str==='' || String(Number(str))===str);
+    }
+
+    function checkAndClose() {
+        if (new Date(task.start) >= new Date(task.finish))
+            showErrorOnlyText('Время конца должно быть позднее времени начала');
+        else if (task.name === '')
+            showErrorOnlyText('Задача должна иметь название');
+        else if (task.keypoint.name === '' && (task.keypoint.description !== '' || task.keypoint.timestamp !== ''))
+            showErrorOnlyText('Ключевая точка должна иметь название');
+        else
+            onClose();
+    }
+
     return (
         <Dialog open={Boolean(task)} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>Edit Task</DialogTitle>
             <DialogContent>
-                <TextField fullWidth margin="dense" label="Name" value={task.name} onChange={(e) => { task.name = e.target.value; onUpdate(task); }} />
+                <TextField fullWidth margin="dense" label="Name" value={task.name} onChange={(e) => { task.name = e.target.value; onUpdate(task); }} required />
                 <TextField fullWidth margin="dense" label="Owner" value={task.owner} onChange={(e) => { task.owner = e.target.value; onUpdate(task); }} />
                 <TextField fullWidth margin="dense" label="Description" value={task.description} onChange={(e) => { task.description = e.target.value; onUpdate(task); }} />
 
@@ -55,7 +71,7 @@ const TaskDialog = ({ task, onClose, onUpdate, onCancel }) => {
                     InputLabelProps={{
                         shrink: true,
                     }}
-                    onChange={(e) => { task.repeatPeriod = e.target.value; onUpdate(task); }}
+                    onChange={(e) => { task.repeatPeriod = isNum(e.target.value)?e.target.value:task.repeatPeriod; onUpdate(task); }}
                     disabled={isStatusLocked} // Disable if task is "INPROGRESS" or "OCCUPIED"
                 />
 
@@ -65,7 +81,7 @@ const TaskDialog = ({ task, onClose, onUpdate, onCancel }) => {
                     label="Duration"
                     type="number"
                     value={task.duration}
-                    onChange={(e) => { task.duration = e.target.value; onUpdate(task); }}
+                    onChange={(e) => { task.duration = isNum(e.target.value)?e.target.value:task.duration; onUpdate(task); }}
                     disabled={isStatusLocked} // Disable if task is "INPROGRESS" or "OCCUPIED"
                 />
 
@@ -74,9 +90,10 @@ const TaskDialog = ({ task, onClose, onUpdate, onCancel }) => {
                     margin="dense"
                     label="Start"
                     type="datetime-local"
-                    value={task.start.replace('Z', '')}
+                    value={task.start}
                     onChange={(e) => { task.start = e.target.value; onUpdate(task); }}
                     disabled={isStatusLocked} // Disable if task is "INPROGRESS" or "OCCUPIED"
+                    required
                 />
 
                 <TextField
@@ -84,18 +101,19 @@ const TaskDialog = ({ task, onClose, onUpdate, onCancel }) => {
                     margin="dense"
                     label="Finish"
                     type="datetime-local"
-                    value={task.finish.replace('Z', '')}
+                    value={task.finish}
                     onChange={(e) => { task.finish = e.target.value; onUpdate(task); }}
                     disabled={isStatusLocked} // Disable if task is "INPROGRESS" or "OCCUPIED"
+                    required
                 />
 
                 <Typography variant="h6" gutterBottom>Keypoint</Typography>
-                <TextField fullWidth margin="dense" label="Keypoint Name" value={task.keypoint.name} />
-                <TextField fullWidth margin="dense" label="Keypoint Description" value={task.keypoint.description} />
-                <TextField fullWidth margin="dense" label="Keypoint Timestamp" type="datetime-local" value={task.keypoint.timestamp.replace('Z', '')} />
+                <TextField fullWidth margin="dense" label="Keypoint Name" value={task.keypoint.name} onChange={(e)=>{task.keypoint.name=e.target.value; onUpdate(task);}} />
+                <TextField fullWidth margin="dense" label="Keypoint Description" value={task.keypoint.description} onChange={(e)=>{task.keypoint.description=e.target.value; onUpdate(task);}} />
+                <TextField fullWidth margin="dense" label="Keypoint Timestamp" type="datetime-local" value={task.keypoint.timestamp?.replace('Z','')} onChange={(e)=>{task.keypoint.timestamp=e.target.value; onUpdate(task);}} />
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} color="primary">{task.id === undefined ? "Add task" : "Edit task"}</Button>
+                <Button onClick={checkAndClose} color="primary">{task.id === undefined ? "Add task" : "Edit task"}</Button>
                 <Button onClick={onCancel} color="primary">Cancel</Button>
             </DialogActions>
         </Dialog>

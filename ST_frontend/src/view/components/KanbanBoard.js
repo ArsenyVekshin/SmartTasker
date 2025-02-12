@@ -82,6 +82,18 @@ const KanbanBoard = () => {
         updateTask(newTask)
     };
 
+    function getCurrentDateTime(now) {    
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0'); // Месяцы начинаются с 0
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+    
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}`;
+    }
+
     const handleCreateTask = (boardId) => {
         setSelectedTask({
             name: `New Task ${tasks.length + 1}`,
@@ -89,8 +101,8 @@ const KanbanBoard = () => {
             status: "FREE",
             board: { id: boardId },
             duration: 60,
-            start: new Date().toISOString(),
-            finish: new Date(Date.now() + 3600000).toISOString(),
+            start: getCurrentDateTime(new Date()),
+            finish: getCurrentDateTime(new Date(Date.now() + 3600000)),
             repeatPeriod: 0,
             keypoint: {
                 name: "Keypoint",
@@ -207,7 +219,7 @@ const KanbanBoard = () => {
                 board={selectedBoard}
                 onClose={() => {setSelectedBoard(null); setOpenDialog(false); (selectedBoard.id === undefined?createBoard(selectedBoard):updateBoard(selectedBoard)).then(importTasks);}}
                 onUpdate={() => {setSelectedBoard({...selectedBoard})}}
-                onCancel={() => {setSelectedBoard(null); setOpenDialog(false);}}
+                onCancel={() => {setSelectedBoard(null); setOpenDialog(false); importTasks();}}
             />}
         </DragDropContext>
     );

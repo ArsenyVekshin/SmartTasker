@@ -15,6 +15,15 @@ export function showError(code, message) {
     }));
 }
 
+export function showErrorOnlyText(message) {
+    console.error("mes = ", message);
+    store.dispatch(addError({
+        type: "error",
+        summary: 'Invalid data',
+        detail: message
+    }));
+}
+
 export function showWarning(code, message) {
     console.warn("code = ", code, "mes = ", message);
     store.dispatch(addError({
