@@ -30,6 +30,7 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
     const [users, setUsers] = useState([]);
     const [places, setPlaces] = useState([]);
     const [selectedUsers, setSelectedUsers] = useState(editedMeeting.members || []);
+    const [allocate, setAllocate] = useState(false);
 
     function getCurrentDateTime(now) {    
         const year = now.getFullYear();
@@ -59,6 +60,18 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
             owner: "", // Обязательное поле
             isOnline: false});
         setSelectedUsers(meeting.members || []);
+        setAllocate((meeting || {
+            name: "",
+            description: "",
+            duration: 0,
+            begin: getCurrentDateTime(new Date()),
+            end: getCurrentDateTime(new Date(Date.now()+3600000)),
+            repeatPeriod: 0,
+            keypoint: null,
+            place: null,
+            members: [],
+            owner: "", // Обязательное поле
+            isOnline: false}).place?.name==='');
         fetchUsersList();
     }, [meeting]);
 
@@ -115,12 +128,10 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
             showErrorOnlyText('Время конца должно быть позднее времени начала');
         else if (editedMeeting.name === '')
             showErrorOnlyText('Встреча должна иметь название');
-        else if (editedMeeting.members.length == 0)
-            showErrorOnlyText('Должен быть хотя бы один участник');
+        // else if (editedMeeting.members.length == 0)
+        //     showErrorOnlyText('Должен быть хотя бы один участник');
         else {
-            if(editedMeeting.place.name==='Сохраните встречу перед поиском свободного помещения')
-                editedMeeting.place = null;
-            onUpdate(editedMeeting);
+            onUpdate(editedMeeting, allocate);
         }
     }
 
@@ -141,12 +152,12 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
 
                     {/* Начало */}
                     <Grid item xs={6}>
-                        <TextField fullWidth label="Начало" type="datetime-local" value={editedMeeting.begin || ""} onChange={handleChange("begin")} />
+                        <TextField fullWidth label="Начало" type="datetime-local" value={editedMeeting.begin || ""} onChange={handleChange("begin")} disabled={editedMeeting.id!==null} />
                     </Grid>
 
                     {/* Конец */}
                     <Grid item xs={6}>
-                        <TextField fullWidth label="Конец" type="datetime-local" value={editedMeeting.end || ""} onChange={handleChange("end")} />
+                        <TextField fullWidth label="Конец" type="datetime-local" value={editedMeeting.end || ""} onChange={handleChange("end")} disabled={editedMeeting.id!==null} />
                     </Grid>
 
 
@@ -176,7 +187,7 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
 
 
                     {/* Место проведения */}
-                    <Grid item xs={12}>
+                    {editedMeeting.id && <Grid item xs={12}>
                         <Typography variant="h6" style={{ display: "flex", alignItems: "center" }}>
                             Место проведения: {editedMeeting.place?.name || "Не указано"}
                             {editedMeeting.members && editedMeeting.members.length > 0 && (
@@ -195,7 +206,7 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
                                 style={{ marginTop: 8 }}
                             />
                         )}
-                    </Grid>
+                    </Grid>}
                 </Grid>
             </DialogContent>
             <DialogActions>

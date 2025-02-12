@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import MeetingCard from "./meeting/MeetingCard";
 import MeetingDialog from "./meeting/MeetingDialog";
-import { getMeeting, getSchedule, createMeeting, getPlaces, createPlace, updateMeeting, getMeetings } from "../../service/Service";
+import { getMeeting, getSchedule, createMeeting, getPlaces, createPlace, updateMeeting, getMeetings, allocateMeeting } from "../../service/Service";
 
 const MeetingList = () => {
     const [meetings, setMeetings] = useState([]);
@@ -81,14 +81,15 @@ const MeetingList = () => {
         });
     };
 
-    const handleSave = (meeting) => {
-        console.log(meeting);
+    const handleSave = (meeting, allocate=false) => {
         if (meeting.id !== null) {
             // Режим редактирования: используем updateMeeting
             updateMeeting(meeting.id, meeting)
                 .then(response => {
                     setMeetings(meetings.map(meeting => meeting.id === response.id ? response : meeting));
                     setSelectedMeeting(null);
+                    if(allocate)
+                        return allocateMeeting(meeting.id);
                 })
                 .catch(error => {
                     console.error("Error updating meeting:", error);

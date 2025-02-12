@@ -187,3 +187,15 @@ export async function getUsersList() {
 export async function getSuitablePlaces(id) {
     return makeRequest(MEETINGS + `/${id}/find-place`, 'POST');
 }
+
+export async function allocateMeeting(id) {
+    return makeRequest(SCHEDULE + `/meeting/allocate/all-members?id=${id}`, 'POST');
+}
+
+export async function allocateTask(id) {
+    return makeRequest(SCHEDULE + `/task/allocate?id=${id}`, 'POST');
+}
+
+export async function allocateOccupiedTask(id) {
+    return makeRequest(SCHEDULE + `/task/chosen/generate?id=${id}`, 'POST');
+}

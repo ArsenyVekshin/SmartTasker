@@ -68,8 +68,8 @@ const WeeklyCalendar = () => {
                 return Promise.all(events.map(ev => {
                     if (ev.taskId != null)
                         return getTask(ev.taskId).then(task => ({ ...ev, name: task.name }));
-                    else if (ev.meetingId != null)
-                        return getMeeting(ev.meetingId).then(meeting => ({ ...ev, name: meeting.name }));
+                    else if (ev.meeting_id != null)
+                        return getMeeting(ev.meeting_id).then(meeting => ({ ...ev, name: meeting.name }));
                     else
                         return Promise.resolve({ ...ev, name: 'Чилл' });
                 }));

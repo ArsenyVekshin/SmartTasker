@@ -64,7 +64,7 @@ const MeetingCard = ({ meeting, onClick, onDeleteClick, onUpdate, onChange, onCa
                     </IconButton>
                 </CardContent>
             </Card>
-            {openDialog && <MeetingDialog meeting={meeting} onClose={()=>{handleDialogClose();}} onCancel={()=>{handleDialogClose(); onCancel();}} onUpdate={(meeting)=>{handleDialogClose();onUpdate(meeting);}} />}
+            {openDialog && <MeetingDialog meeting={meeting} onClose={()=>{handleDialogClose();}} onCancel={()=>{handleDialogClose(); onCancel();}} onUpdate={(meeting, allocate)=>{handleDialogClose();onUpdate(meeting, allocate);}} />}
 
         </>
     );
