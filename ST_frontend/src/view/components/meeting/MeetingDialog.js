@@ -165,7 +165,9 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
                     </Grid>
 
                     <Grid item xs={6}>
-                        <TextField fullWidth label="Repeat Period" type="number" value={editedMeeting.repeatPeriod || ""} onChange={(e)=>{if(isNum(e.target.value)) handleChange("repeatPeriod")(e.target.value)}} disabled={editedMeeting.id!==null} />
+                        <TextField fullWidth label="Repeat Period" value={editedMeeting.repeatPeriod || ""} onChange={(e)=>{if(isNum(e.target.value)) {
+                            handleChange("repeatPeriod")(e)
+                        }}} disabled={editedMeeting.id!==null} />
                     </Grid>
 
 
