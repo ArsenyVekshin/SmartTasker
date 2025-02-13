@@ -2,9 +2,13 @@ package com.arsenyvekshin.st_backend.dto;
 
 import com.arsenyvekshin.st_backend.entity.Keypoint;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
+import lombok.*;
 
 @Data
+@AllArgsConstructor
+@RequiredArgsConstructor
+@Setter
+@Getter
 public class KeypointDto {
 
     @JsonProperty

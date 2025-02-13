@@ -2,12 +2,16 @@ package com.arsenyvekshin.st_backend.service;
 
 
 import com.arsenyvekshin.st_backend.dto.TaskDto;
+import com.arsenyvekshin.st_backend.entity.Role;
 import com.arsenyvekshin.st_backend.entity.Task;
 import com.arsenyvekshin.st_backend.entity.TaskStatus;
+import com.arsenyvekshin.st_backend.entity.User;
 import com.arsenyvekshin.st_backend.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.awt.desktop.PreferencesEvent;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -56,6 +60,12 @@ public class TaskService {
         taskRepository.save(task);
     }
 
+    public void planTask(Task task) {
+        task.setOwner(userService.getCurrentUser());
+        task.setStatus(TaskStatus.INPROGRESS);
+        taskRepository.save(task);
+    }
+
 
     private Task build(Task task, TaskDto dto) {
         task.updateByDto(dto);
@@ -76,8 +86,28 @@ public class TaskService {
             }
         }
 
+        if (dto.getOwner() != null) {
+            User user = userService.getByUsername(dto.getOwner());
+            if(user == null) task.setOwner(userService.getCurrentUser());
+            else task.setOwner(user);
+        } else {
+            task.setOwner(userService.getCurrentUser());
+        }
+
+
         return task;
     }
 
+    public TaskDto getTask(Long id){
+        Task task = find(id);
+        userService.checkOwnership(task);
+        return new TaskDto(task);
+    }
+
+
+    public List<Task> getUserTasks() {
+        User user = userService.getCurrentUser();
+        return taskRepository.findTasksToEmplace(user);
+    }
 
 }

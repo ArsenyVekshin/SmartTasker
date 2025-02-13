@@ -2,11 +2,17 @@ package com.arsenyvekshin.st_backend.service;
 
 
 import com.arsenyvekshin.st_backend.dto.MeetingDto;
+import com.arsenyvekshin.st_backend.dto.PlaceDto;
 import com.arsenyvekshin.st_backend.entity.Meeting;
+import com.arsenyvekshin.st_backend.entity.Place;
+import com.arsenyvekshin.st_backend.entity.User;
 import com.arsenyvekshin.st_backend.repository.MeetingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -67,8 +73,51 @@ public class MeetingService {
             }
         }
 
+        if (dto.getOwner() != null && !dto.getOwner().isEmpty()) {
+            meeting.setOwner(userService.getByUsername(dto.getOwner()));
+        } else {
+            meeting.setOwner(userService.getCurrentUser());
+        }
+
+        if(dto.getMembers() != null){
+            meeting.setMembers(new HashSet<>());
+            if(!dto.getMembers().isEmpty()) {
+                for(String username: dto.getMembers()){
+                    User user = userService.getByUsername(username);
+                    meeting.addMember(user);
+                }
+            }
+        }
+
         return meeting;
     }
 
+    public List<Place> findBusyPlacesByTimeRange(LocalDateTime start, LocalDateTime finish){
+        return meetingRepository.findBusyPlacesByTimeRange(start, finish);
+    }
+
+    private List<Place> findSuitablePlacesForMeeting(Meeting meeting) {
+        List<Place> suitable = placeService.findSuitablePlaces(meeting.membersNum());
+        if(suitable.isEmpty()) throw new IllegalArgumentException("Слишком много участников. Нет подходящей локации.");
+        List<Place> busy = findBusyPlacesByTimeRange(meeting.getStart(), meeting.getFinish());
+        suitable.removeAll(busy);
+        if(suitable.isEmpty()) throw new IllegalArgumentException("Все подходящие локации в это время заняты.");
+
+        return suitable;
+    }
+
+    public List<PlaceDto> getSuitablePlacesForMeeting(long id) {
+        Meeting meeting = find(id);
+        return findSuitablePlacesForMeeting(meeting).stream().map(PlaceDto::new).toList();
+    }
+
+    public List<MeetingDto> getAllUserMeetings() {
+        User user = userService.getCurrentUser();
+        return getAllUserMeetings(user).stream().map(MeetingDto::new).toList();
+    }
+
+    public List<Meeting> getAllUserMeetings(User user) {
+        return meetingRepository.findAllByUserIsMemberOrOwner(user);
+    }
 
 }

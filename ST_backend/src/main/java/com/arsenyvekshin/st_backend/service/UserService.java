@@ -95,6 +95,9 @@ public class UserService {
             throw new IllegalArgumentException("У вас нет прав на изменение этого объекта");
     }
 
+    public List<String> getUsersList() {
+        return userRepository.getUsersList();
+    }
 
     public List<String> getUnapprovedUsers() {
         return userRepository.getUnapprovedUsers();

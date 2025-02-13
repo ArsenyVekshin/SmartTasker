@@ -1,6 +1,7 @@
 package com.arsenyvekshin.st_backend.entity;
 
 
+import com.sun.jdi.request.DuplicateRequestException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Max;
@@ -10,13 +11,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.InvalidClassException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "TimeInterval")
+@Entity(name = "time_interval")
 public class TimeInterval implements OwnedObject {
 
     @Id
@@ -37,8 +39,8 @@ public class TimeInterval implements OwnedObject {
     private User owner;
 
     @Column(name = "duration")
-    @Min(value = 600, message = "Перекур дольше длится, камон... Давай хотя-бы 10 минут")
-    @Max(value = 28800, message = "Ты можешь столько работать подряд, серьезно? (8 - максимум, не ври себе)")
+    @Min(value = 10, message = "Перекур дольше длится, камон... Давай хотя-бы 10 минут")
+    @Max(value = 600, message = "Ты можешь столько работать подряд, серьезно? (8 - максимум, не ври себе)")
     private Duration duration;
 
     @NotBlank(message = "Время начала интервала не может быть пустым")
@@ -70,4 +72,30 @@ public class TimeInterval implements OwnedObject {
         //TODO: нужна валидация? Проверить
     }
 
+    public void occupyBy(AllocatableObject obj) {
+        if(obj.getClass() == Task.class)
+            this.task = (Task) obj;
+        else if(obj.getClass() == Meeting.class)
+            this.meeting = (Meeting) obj;
+        else throw new IllegalArgumentException("Данный клас не может резервировать временные слоты");
+    }
+
+
+    public boolean isCapableFor(AllocatableObject placeholder) {
+        return  !this.locked
+                && this.meeting == null
+                && this.task == null;
+    }
+
+    public boolean isCapableForStable(AllocatableObject placeholder) {
+        return  !this.locked
+                && this.meeting == null
+                && this.task == null
+                && (this.start.isBefore(placeholder.getStart()) || this.start.isEqual(placeholder.getStart()))
+                && (this.finish.isAfter(placeholder.getFinish()) || this.finish.isEqual(placeholder.getFinish())) ;
+    }
+
+    public boolean isPossibleToSplit(Duration part) {
+        return this.duration.minus(part).compareTo(Duration.ofMinutes(10)) > 0;
+    }
 }

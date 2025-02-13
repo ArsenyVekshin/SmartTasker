@@ -7,6 +7,7 @@ import com.arsenyvekshin.st_backend.repository.PlaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -40,6 +41,14 @@ public class PlaceService {
     public void delete(Long id) {
         Place obj = find(id);
         placeRepository.delete(obj);
+    }
+
+    public List<Place> findSuitablePlaces(int membersNum){
+        return placeRepository.findByAvailableTrueAndCapacityGreaterThanEqual(membersNum);
+    }
+
+    public List<PlaceDto> getAllPlaces() {
+        return placeRepository.findAll().stream().map(PlaceDto::new).toList();
     }
 
 }

@@ -3,9 +3,7 @@ package com.arsenyvekshin.st_backend.dto;
 
 import com.arsenyvekshin.st_backend.entity.Board;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +11,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @RequiredArgsConstructor
+@Setter
+@Getter
 public class BoardContentDto {
 
     @JsonProperty

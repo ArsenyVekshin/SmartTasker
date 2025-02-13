@@ -1,7 +1,10 @@
 package com.arsenyvekshin.st_backend.repository;
 
 import com.arsenyvekshin.st_backend.entity.Meeting;
+import com.arsenyvekshin.st_backend.entity.Place;
+import com.arsenyvekshin.st_backend.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -25,11 +28,26 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
     // Метод для поиска встреч по месту
     List<Meeting> findByPlaceId(Long placeId);
 
+    List<Meeting> findByOwner(User owner);
+
     // Метод для поиска встреч по участникам (по пользователю)
     List<Meeting> findByMembersId(Long userId);
 
     // Метод для поиска встреч, которые повторяются через определённый период
     List<Meeting> findByRepeatPeriodNotNull();
 
+    @Query("SELECT DISTINCT m.place " +
+            "FROM Meeting m " +
+            "WHERE (m.start BETWEEN :start AND :finish) " +
+            "OR (m.finish BETWEEN :start AND :finish) " +
+            "OR (m.start <= :start AND m.finish >= :finish)")
+    List<Place> findBusyPlacesByTimeRange(LocalDateTime start, LocalDateTime finish);
+
+
+    // Метод для поиска встреч, где пользователь является либо членом (member), либо владельцем (owner)
+    @Query("SELECT m FROM Meeting m " +
+            "WHERE :user MEMBER OF m.members " +
+            "OR m.owner = :user")
+    List<Meeting> findAllByUserIsMemberOrOwner(User user);
 }
 

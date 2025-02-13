@@ -2,6 +2,7 @@ package com.arsenyvekshin.st_backend.service;
 
 import com.arsenyvekshin.st_backend.dto.BoardDto;
 import com.arsenyvekshin.st_backend.entity.Board;
+import com.arsenyvekshin.st_backend.entity.User;
 import com.arsenyvekshin.st_backend.repository.BoardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,10 +17,10 @@ public class BoardService {
     private final UserService userService;
 
     public Board create(BoardDto dto) {
-        Board obj = new Board().updateByDto(dto);
-        obj.setOwner(userService.getCurrentUser());
-        boardRepository.save(obj);
-        return obj;
+        Board board = new Board().updateByDto(dto);
+        board.setOwner(userService.getCurrentUser());
+        boardRepository.save(build(board, dto));
+        return board;
     }
 
     public Board find(Long id) {
@@ -35,7 +36,7 @@ public class BoardService {
     public Board update(BoardDto dto) {
         Board board = find(dto.getId());
         userService.checkOwnership(board);
-        boardRepository.save(board.updateByDto(dto));
+        boardRepository.save(build(board, dto));
         return board;
     }
 
@@ -43,6 +44,20 @@ public class BoardService {
         Board board = find(id);
         userService.checkOwnership(board);
         boardRepository.delete(board);
+    }
+
+    private Board build(Board board, BoardDto dto) {
+        board.updateByDto(dto);
+
+        if (dto.getOwner() != null) {
+            User user = userService.getByUsername(dto.getOwner());
+            if(user == null) board.setOwner(userService.getCurrentUser());
+            else board.setOwner(user);
+        } else {
+            board.setOwner(userService.getCurrentUser());
+        }
+        return board;
+
     }
 
     //TODO: статистика по доске?

@@ -12,7 +12,7 @@ import java.util.Set;
 
 @Data
 @Entity(name = "Meeting")
-public class Meeting {
+public class Meeting implements AllocatableObject, OwnedObject, Cloneable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,7 +45,7 @@ public class Meeting {
     private Keypoint keypoint;
 
     @ManyToOne
-    @JoinColumn(name = "place_id", nullable = false)
+    @JoinColumn(name = "place_id")
     private Place place;
 
     @ManyToMany
@@ -60,8 +60,14 @@ public class Meeting {
     @JoinColumn(name = "task_id")
     private Task task;
 
-    @PostPersist
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
+    @PrePersist
+    @PreUpdate
     protected void onCreate() {
+        if(!this.start.isBefore(this.finish)) throw new IllegalArgumentException("Время начала не может быть позже времени окончания");
         this.duration = Duration.between(this.start, this.finish);
     }
 
@@ -69,14 +75,26 @@ public class Meeting {
         this.id = dto.getId();
         this.name = dto.getName();
         this.description = dto.getDescription();
-        this.duration = dto.getDuration();
+        this.duration = Duration.ofMinutes(dto.getDuration());
         this.start = dto.getBegin();
         this.finish = dto.getEnd();
-        this.repeatPeriod = dto.getRepeatPeriod();
+        this.repeatPeriod = Duration.ofMinutes(dto.getRepeatPeriod());
         return this;
     }
 
     public void addMember(User user) {
         members.add(user);
+    }
+
+    public int membersNum(){return members.size();}
+
+    @Override
+    public Meeting clone() {
+        try {
+            Meeting clone = (Meeting) super.clone();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 }

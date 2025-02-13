@@ -1,0 +1,8 @@
+{
+  "short_name": "SmartTasker",
+  "name": "SmartTasker IS CourseWork",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

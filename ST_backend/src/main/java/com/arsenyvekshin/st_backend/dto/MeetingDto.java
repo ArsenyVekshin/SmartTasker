@@ -2,14 +2,20 @@ package com.arsenyvekshin.st_backend.dto;
 
 
 import com.arsenyvekshin.st_backend.entity.Meeting;
+import com.arsenyvekshin.st_backend.entity.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import lombok.*;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-@Data
+@AllArgsConstructor
+@RequiredArgsConstructor
+@Setter
+@Getter
 public class MeetingDto {
 
     @JsonProperty
@@ -23,7 +29,7 @@ public class MeetingDto {
     private String description;
 
     @JsonProperty
-    private Duration duration;
+    private long duration;
 
     @NotBlank(message = "Время начала задачи не может быть пустым")
     @JsonProperty
@@ -34,7 +40,7 @@ public class MeetingDto {
     private LocalDateTime end;
 
     @JsonProperty
-    private Duration repeatPeriod;
+    private long repeatPeriod;
 
     @JsonProperty
     private KeypointDto keypoint;
@@ -42,16 +48,30 @@ public class MeetingDto {
     @JsonProperty
     private PlaceDto place;
 
+    @JsonProperty
+    private String owner;
+
+    private List<String> members = new ArrayList<>();
+
+
     public MeetingDto(Meeting obj) {
         this.id = obj.getId();
         this.name = obj.getName();
         this.description = obj.getDescription();
-        this.duration = obj.getDuration();
+        this.duration = obj.getDuration().toMinutes();
         this.begin = obj.getStart();
         this.end = obj.getFinish();
-        this.repeatPeriod = obj.getRepeatPeriod();
-        this.keypoint = new KeypointDto(obj.getKeypoint());
-        this.place = new PlaceDto(obj.getPlace());
+        this.repeatPeriod = obj.getRepeatPeriod().toMinutes();
+        if (obj.getKeypoint() != null)
+            this.keypoint = new KeypointDto(obj.getKeypoint());
+        if (obj.getPlace() != null)
+            this.place = new PlaceDto(obj.getPlace());
+        if (obj.getOwner() != null)
+            this.owner = obj.getOwner().getUsername();
+
+        if(!obj.getMembers().isEmpty()) {
+            this.members.addAll(obj.getMembers().stream().map(User::getUsername).toList());
+        }
     }
 
 
