@@ -135,6 +135,10 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
         }
     }
 
+    function isNum(str) {
+        return (new RegExp(/^\d*$/).test(str)) && (str==='' || String(Number(str))===str);
+    }
+
     return (
         <Dialog open={meeting!==null} onClose={onClose}>
             <DialogTitle>Редактирование встречи</DialogTitle>
@@ -158,6 +162,10 @@ const MeetingDialog = ({ meeting, onClose, onUpdate, onCancel }) => {
                     {/* Конец */}
                     <Grid item xs={6}>
                         <TextField fullWidth label="Конец" type="datetime-local" value={editedMeeting.end || ""} onChange={handleChange("end")} disabled={editedMeeting.id!==null} />
+                    </Grid>
+
+                    <Grid item xs={6}>
+                        <TextField fullWidth label="Repeat Period" type="number" value={editedMeeting.repeatPeriod || ""} onChange={(e)=>{if(isNum(e.target.value)) handleChange("repeatPeriod")(e.target.value)}} disabled={editedMeeting.id!==null} />
                     </Grid>
 
 
